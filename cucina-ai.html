@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Cucina — Ricette su Misura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F4F7FA;--bg2:#E8EEF5;--surface:#FDFEFF;--surface2:#EBF1F8;--surface3:#D6E2EF;
+  --navy:#1D4E6F;--navy-mid:#2A6690;--navy-light:#3D7FA8;
+  --blue-light:#A8C4D8;--blush:#D4A8B0;--sand:#D8CEC0;
+  --accent:#1D4E6F;--accent-bright:#3D7FA8;--accent-pale:rgba(29,78,111,0.10);
+  --text:#1A2E3B;--text2:#2D4A5C;--muted:#5A7A8E;
+  --text-inv:#EBF3FA;--text-inv2:#A8C4D8;--muted-inv:#7AAABF;
+  --border:rgba(29,78,111,0.12);--border-soft:rgba(29,78,111,0.06);--border-accent:rgba(29,78,111,0.35);
+  --shadow:0 4px 24px rgba(29,78,111,0.10);--shadow-lg:0 16px 56px rgba(29,78,111,0.14);--shadow-sm:0 2px 12px rgba(29,78,111,0.07);
+  --gradient-h:linear-gradient(90deg,#A8C4D8,#1D4E6F,#D4A8B0);
+  --radius:10px;--radius-lg:16px;
+  --font-display:'Cinzel',serif;--font-serif:'Cormorant Garamond',Georgia,serif;
+  --font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+
+/* HEADER */
+header.site-header{background:var(--navy);padding:0 24px;border-bottom:3px solid rgba(168,196,216,0.4);position:sticky;top:0;z-index:200}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;height:60px}
+.logo{font-family:var(--font-display);font-size:1.05rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--text-inv);display:flex;align-items:center;gap:10px}
+.logo-dot{width:6px;height:6px;border-radius:50%;background:var(--blue-light)}
+.logo-sub{font-family:var(--font-serif);font-style:italic;font-size:.88rem;color:var(--muted-inv)}
+.nav-tabs{margin-left:auto;display:flex;gap:4px}
+.nav-tab{padding:6px 14px;border-radius:20px;font-size:.76rem;font-weight:500;letter-spacing:.03em;color:var(--muted-inv);background:transparent;border:1px solid transparent;cursor:pointer;transition:all .18s;font-family:var(--font-body)}
+.nav-tab:hover{color:var(--text-inv);border-color:rgba(168,196,216,.3)}
+.nav-tab.active{background:rgba(168,196,216,.15);color:var(--text-inv);border-color:rgba(168,196,216,.4)}
+
+/* VIEWS */
+.view{display:none}.view.active{display:block}
+
+/* LAYOUT */
+.page-wrap{max-width:1100px;margin:0 auto;padding:36px 20px 80px;display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start}
+
+/* PANEL */
+.config-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 22px;box-shadow:var(--shadow-sm);position:sticky;top:76px;max-height:calc(100vh - 96px);overflow-y:auto}
+.config-panel::-webkit-scrollbar{width:3px}
+.config-panel::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
+.panel-title{font-family:var(--font-display);font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.panel-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.p-section{margin-bottom:20px}
+.p-section-title{font-family:var(--font-serif);font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border-soft)}
+
+/* SWITCH */
+.switch-group{display:flex;flex-direction:column;gap:7px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border-soft);background:var(--bg);cursor:pointer;transition:border-color .18s,background .18s}
+.switch-row:hover{border-color:var(--border-accent);background:var(--accent-pale)}
+.switch-row.active{border-color:var(--navy-mid);background:rgba(29,78,111,.07)}
+.switch-label{font-size:.83rem;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:7px}
+.toggle{width:34px;height:19px;background:var(--surface3);border-radius:19px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.switch-row.active .toggle{background:var(--navy-mid)}
+.switch-row.active .toggle::after{transform:translateX(15px)}
+
+/* RADIO */
+.radio-group{display:flex;flex-direction:column;gap:6px}
+.radio-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:var(--radius);border:1px solid var(--border-soft);background:var(--bg);cursor:pointer;transition:all .18s}
+.radio-row:hover{border-color:var(--border-accent);background:var(--accent-pale)}
+.radio-row.active{border-color:var(--navy-mid);background:rgba(29,78,111,.07)}
+.radio-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--surface3);background:var(--surface);flex-shrink:0;position:relative;transition:border-color .18s}
+.radio-row.active .radio-dot{border-color:var(--navy-mid)}
+.radio-row.active .radio-dot::after{content:'';position:absolute;width:7px;height:7px;background:var(--navy-mid);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.radio-label{font-size:.83rem;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:7px}
+
+/* MODE */
+.mode-switcher{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mode-btn{padding:8px 4px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);font-family:var(--font-body);font-size:.77rem;font-weight:500;color:var(--muted);cursor:pointer;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.mode-btn .m-icon{font-size:1.15rem}
+.mode-btn:hover{border-color:var(--border-accent);color:var(--text)}
+.mode-btn.active{background:var(--navy);border-color:var(--navy);color:var(--text-inv)}
+
+/* INPUTS */
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.input-group{display:flex;flex-direction:column;gap:4px}
+.input-group.full{grid-column:1/-1}
+.input-label{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.input-field{padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-family:var(--font-body);font-size:.86rem;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}
+.input-field:focus{border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(29,78,111,.1)}
+.input-field::placeholder{color:var(--muted);opacity:.6}
+.input-hint{font-size:.67rem;color:var(--muted);font-style:italic}
+textarea.input-field{resize:vertical;min-height:68px;line-height:1.5}
+
+/* custom wrappers */
+.cucina-custom-wrap{margin-top:7px}
+#cucina-custom-input{display:none}
+#cucina-custom-input.visible{display:flex}
+#cottura-custom-wrap,#tempo-custom-wrap{margin-top:7px;display:none}
+#cottura-custom-wrap.visible,#tempo-custom-wrap.visible{display:flex}
+
+/* BTN GENERA */
+.btn-generate{width:100%;padding:13px;background:var(--navy);color:var(--text-inv);border:none;border-radius:var(--radius);font-family:var(--font-display);font-size:.73rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;transition:background .2s,transform .1s;margin-top:6px}
+.btn-generate::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .5s}
+.btn-generate:hover::before{left:100%}
+.btn-generate:hover{background:var(--navy-mid)}
+.btn-generate:active{transform:scale(.98)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* RESULTS */
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.results-title{font-family:var(--font-display);font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px}
+.results-title::before{content:'';width:50px;height:1px;background:var(--border)}
+
+/* EMPTY / LOADER */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:14px;opacity:.5}
+.empty-title{font-family:var(--font-serif);font-size:1.35rem;font-weight:600;font-style:italic;color:var(--text2);margin-bottom:8px}
+.empty-desc{font-size:.83rem;max-width:280px}
+.loader-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:18px}
+.loader-wave{display:flex;gap:6px;align-items:center}
+.loader-wave span{width:6px;height:6px;border-radius:50%;background:var(--navy);animation:wave 1.2s ease-in-out infinite}
+.loader-wave span:nth-child(2){animation-delay:.15s}
+.loader-wave span:nth-child(3){animation-delay:.3s}
+.loader-wave span:nth-child(4){animation-delay:.45s}
+@keyframes wave{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-8px);opacity:1}}
+.loader-text{font-family:var(--font-serif);font-style:italic;font-size:.98rem;color:var(--text2)}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:18px;margin-bottom:24px}
+.recipe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .22s,box-shadow .22s,border-color .22s;display:flex;flex-direction:column;animation:cardIn .4s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.recipe-card:nth-child(2){animation-delay:.07s}
+.recipe-card:nth-child(3){animation-delay:.14s}
+.recipe-card:nth-child(4){animation-delay:.21s}
+.recipe-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--border-accent)}
+
+.card-top{padding:18px 18px 14px;border-bottom:1px solid var(--border-soft);position:relative}
+.card-top::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-h);opacity:0;transition:opacity .25s}
+.recipe-card:hover .card-top::before{opacity:1}
+.card-cuisine{font-family:var(--font-mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-bright);margin-bottom:5px}
+.card-name{font-family:var(--font-serif);font-size:1.15rem;font-weight:700;line-height:1.2;color:var(--text);margin-bottom:7px}
+.card-desc{font-size:.81rem;color:var(--muted);line-height:1.5;font-weight:300}
+.card-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.63rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.badge.mode-gustosa{background:rgba(212,168,176,.2);color:#8B3A4A;border-color:rgba(212,168,176,.5)}
+.badge.mode-fit{background:rgba(29,78,111,.1);color:var(--navy);border-color:rgba(29,78,111,.3)}
+.badge.mode-leggera{background:rgba(216,206,192,.3);color:#6B5A4A;border-color:rgba(216,206,192,.6)}
+
+.card-macros{display:grid;grid-template-columns:repeat(4,1fr);padding:11px 18px;border-bottom:1px solid var(--border-soft);background:var(--bg)}
+.macro-item{text-align:center}
+.macro-val{font-family:var(--font-mono);font-size:.87rem;font-weight:500;color:var(--text);display:block}
+.macro-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+
+.card-body-toggle{text-align:center;padding:9px;font-size:.73rem;color:var(--accent-bright);font-weight:600;cursor:pointer;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:1px solid var(--border-soft);transition:color .15s,background .15s}
+.card-body-toggle:hover{color:var(--navy);background:var(--surface2)}
+.toggle-arrow{transition:transform .25s;display:inline-block}
+.recipe-card.expanded .toggle-arrow{transform:rotate(180deg)}
+.card-body{padding:14px 18px 0;display:none;flex-direction:column;gap:14px}
+.recipe-card.expanded .card-body{display:flex}
+
+.ingredient-list{list-style:none}
+.ingredient-list li{display:flex;align-items:baseline;gap:8px;font-size:.82rem;padding:5px 0;border-bottom:1px solid var(--border-soft);color:var(--text2)}
+.ingredient-list li:last-child{border-bottom:none}
+.ing-qty{font-family:var(--font-mono);font-size:.76rem;color:var(--accent-bright);flex-shrink:0;min-width:50px}
+.steps-list{list-style:none;counter-reset:steps}
+.steps-list li{counter-increment:steps;display:flex;gap:11px;align-items:flex-start;font-size:.81rem;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border-soft);line-height:1.5}
+.steps-list li:last-child{border-bottom:none}
+.steps-list li::before{content:counter(steps);min-width:21px;height:21px;background:var(--navy);color:var(--text-inv);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.62rem;flex-shrink:0;margin-top:1px}
+.section-mini-title{font-family:var(--font-serif);font-size:.86rem;font-weight:700;color:var(--text);margin-bottom:7px}
+
+/* MODIFICA */
+.card-modify-area{padding:11px 18px;background:rgba(29,78,111,.03);border-top:1px solid var(--border-soft);display:none}
+.card-modify-area.visible{display:block}
+.modify-label{font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.modify-row{display:flex;gap:7px}
+.modify-input{flex:1;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-family:var(--font-body);font-size:.82rem;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}
+.modify-input:focus{border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(29,78,111,.1)}
+.modify-input::placeholder{color:var(--muted);opacity:.6}
+.btn-modify{padding:7px 12px;background:var(--navy);color:var(--text-inv);border:none;border-radius:var(--radius);font-family:var(--font-body);font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .18s;display:flex;align-items:center;gap:5px}
+.btn-modify:hover{background:var(--navy-mid)}
+.btn-modify:disabled{opacity:.5;cursor:not-allowed}
+.modify-loader{font-size:.76rem;color:var(--muted);font-style:italic;padding:5px 0;margin-top:4px}
+
+/* CARD ACTIONS */
+.card-actions{display:flex;gap:7px;padding:11px 18px 14px;border-top:1px solid var(--border-soft);margin-top:auto}
+.btn-save{flex:1;padding:7px;border-radius:var(--radius);border:1px solid var(--border-accent);background:transparent;color:var(--navy);font-family:var(--font-body);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-save:hover{background:var(--navy);color:var(--text-inv);border-color:var(--navy)}
+.btn-save.saved{background:rgba(29,78,111,.06);color:var(--muted);border-color:var(--border);cursor:default}
+.btn-edit-toggle{flex:1;padding:7px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text2);font-family:var(--font-body);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-edit-toggle:hover{background:var(--surface2);border-color:var(--border-accent)}
+.btn-unsave{flex:1;padding:7px;border-radius:var(--radius);border:1px solid rgba(200,60,60,.35);background:transparent;color:#8B3030;font-family:var(--font-body);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-unsave:hover{background:rgba(200,60,60,.08)}
+
+/* BTN MORE */
+.btn-more-wrap{text-align:center;margin-top:6px}
+.btn-more{display:inline-flex;align-items:center;gap:10px;padding:11px 26px;background:transparent;border:1.5px solid var(--navy);border-radius:var(--radius);color:var(--navy);font-family:var(--font-display);font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-more:hover{background:var(--navy);color:var(--text-inv)}
+.btn-more:disabled{opacity:.4;cursor:not-allowed}
+
+/* SAVED VIEW */
+.saved-view{max-width:1100px;margin:0 auto;padding:36px 20px 80px}
+.saved-header{margin-bottom:26px}
+.saved-header-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.saved-main-title{font-family:var(--font-display);font-size:.68rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.saved-main-title::before{content:'';width:36px;height:1px;background:var(--border)}
+.saved-count-label{font-family:var(--font-mono);font-size:.68rem;color:var(--muted);margin-left:46px}
+
+.search-bar-wrap{display:flex;align-items:center;position:relative}
+.search-input{padding:8px 14px 8px 36px;border:1px solid var(--border);border-radius:24px;background:var(--surface);font-family:var(--font-body);font-size:.84rem;color:var(--text);outline:none;width:250px;transition:border-color .18s,box-shadow .18s}
+.search-input:focus{border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(29,78,111,.1)}
+.search-input::placeholder{color:var(--muted);opacity:.6}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;pointer-events:none}
+.no-results{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;text-align:center}
+.no-results .empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:.4}
+.no-results .empty-title{font-family:var(--font-serif);font-size:1.2rem;font-weight:600;font-style:italic;color:var(--text2);margin-bottom:6px}
+.no-results .empty-desc{font-size:.82rem;color:var(--muted)}
+
+/* ERROR */
+.error-box{background:rgba(200,60,60,.08);border:1px solid rgba(200,60,60,.25);border-radius:var(--radius);padding:14px 18px;color:#8B3030;font-size:.84rem;margin:18px 0}
+
+/* FOOTER */
+footer{background:var(--navy);color:var(--muted-inv);text-align:center;padding:18px;font-size:.76rem;border-top:2px solid rgba(168,196,216,.3)}
+footer strong{color:var(--blue-light)}
+
+@media(max-width:900px){.page-wrap{grid-template-columns:1fr}.config-panel{position:static;max-height:none}}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}.search-input{width:180px}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo"><div class="logo-dot"></div>La Cucina</div>
+    <div class="logo-sub">Ricette su Misura</div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="generate" onclick="switchView('generate',this)">✦ Genera</button>
+      <button class="nav-tab" data-view="saved" onclick="switchView('saved',this)">🔖 Salvate&nbsp;<span id="saved-badge"></span></button>
+    </nav>
+  </div>
+</header>
+
+<!-- VIEW GENERA -->
+<div class="view active" id="view-generate">
+  <div class="page-wrap">
+    <aside class="config-panel">
+      <div class="panel-title">Parametri</div>
+
+      <div class="p-section">
+        <div class="p-section-title">✦ Tipo di Cena</div>
+        <div class="mode-switcher">
+          <button class="mode-btn active" data-mode="gustosa"><span class="m-icon">🍽️</span>Gustosa</button>
+          <button class="mode-btn" data-mode="fit"><span class="m-icon">💪</span>Fit</button>
+          <button class="mode-btn" data-mode="leggera"><span class="m-icon">🌿</span>Leggera</button>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-section-title">◈ Target Nutrizionale</div>
+        <div class="input-grid">
+          <div class="input-group full">
+            <label class="input-label">Calorie (kcal)</label>
+            <input type="number" id="target-cal" class="input-field" placeholder="es. 600" min="100" max="3000">
+            <span class="input-hint">Lascia vuoto → decide l'AI</span>
+          </div>
+          <div class="input-group"><label class="input-label">Proteine (g)</label><input type="number" id="target-prot" class="input-field" placeholder="es. 35" min="0"></div>
+          <div class="input-group"><label class="input-label">Carboidrati (g)</label><input type="number" id="target-carb" class="input-field" placeholder="es. 60" min="0"></div>
+          <div class="input-group full"><label class="input-label">Grassi (g)</label><input type="number" id="target-fat" class="input-field" placeholder="es. 20" min="0"></div>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-section-title">🔥 Tipo di Cottura</div>
+        <div class="radio-group" id="cottura-group">
+          <div class="radio-row active" data-cottura="qualsiasi"><div class="radio-dot"></div><span class="radio-label">🍳 Qualsiasi</span></div>
+          <div class="radio-row" data-cottura="friggitrice ad aria"><div class="radio-dot"></div><span class="radio-label">🌀 Solo friggitrice ad aria</span></div>
+          <div class="radio-row" data-cottura="padella"><div class="radio-dot"></div><span class="radio-label">🥘 Solo padella</span></div>
+          <div class="radio-row" data-cottura="microonde"><div class="radio-dot"></div><span class="radio-label">📡 Solo microonde</span></div>
+          <div class="radio-row" data-cottura="__altro__"><div class="radio-dot"></div><span class="radio-label">✏️ Altro…</span></div>
+        </div>
+        <div id="cottura-custom-wrap" class="input-group">
+          <input type="text" id="cottura-altra-text" class="input-field" placeholder="es. forno, pentola a pressione…">
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-section-title">⏱ Tempo di Preparazione</div>
+        <div class="radio-group" id="tempo-group">
+          <div class="radio-row active" data-tempo="qualsiasi"><div class="radio-dot"></div><span class="radio-label">⏳ Qualsiasi</span></div>
+          <div class="radio-row" data-tempo="meno di 10 minuti"><div class="radio-dot"></div><span class="radio-label">⚡ Meno di 10 minuti</span></div>
+          <div class="radio-row" data-tempo="meno di 20 minuti"><div class="radio-dot"></div><span class="radio-label">🕐 Meno di 20 minuti</span></div>
+          <div class="radio-row" data-tempo="__altro__"><div class="radio-dot"></div><span class="radio-label">✏️ Altro…</span></div>
+        </div>
+        <div id="tempo-custom-wrap" class="input-group">
+          <input type="text" id="tempo-altro-text" class="input-field" placeholder="es. meno di 45 minuti…">
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-section-title">◉ Ingredienti Disponibili</div>
+        <div class="input-group">
+          <textarea id="ingredienti" class="input-field" placeholder="es. pollo, zucchine, riso basmati, limone…"></textarea>
+          <span class="input-hint">Separa con virgola. Lascia vuoto per ricette libere.</span>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-section-title">◎ Ispirazione Culinaria</div>
+        <div class="switch-group" id="cucina-switches">
+          <div class="switch-row" data-cucina="italiana"><span class="switch-label"><span>🇮🇹</span>Italiana</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="messicana"><span class="switch-label"><span>🇲🇽</span>Messicana</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="cinese"><span class="switch-label"><span>🇨🇳</span>Cinese</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="giapponese"><span class="switch-label"><span>🇯🇵</span>Giapponese</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="thai"><span class="switch-label"><span>🇹🇭</span>Thai</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="vietnamita"><span class="switch-label"><span>🇻🇳</span>Vietnamita</span><div class="toggle"></div></div>
+          <div class="switch-row" data-cucina="__altra__"><span class="switch-label"><span>🌍</span>Altra cucina…</span><div class="toggle"></div></div>
+        </div>
+        <div class="cucina-custom-wrap"><div class="input-group" id="cucina-custom-input"><input type="text" id="cucina-altra-text" class="input-field" placeholder="es. Peruviana, Turca…"></div></div>
+      </div>
+
+      <button class="btn-generate" id="btn-generate">Genera Ricette ✦</button>
+    </aside>
+
+    <main>
+      <div class="results-header"><div class="results-title">Le tue ricette</div></div>
+      <div id="results-container">
+        <div class="empty-state">
+          <div class="empty-icon">🍲</div>
+          <div class="empty-title">Nessuna ricetta ancora</div>
+          <div class="empty-desc">Configura i parametri e premi <em>Genera Ricette</em> per iniziare.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- VIEW SALVATE -->
+<div class="view" id="view-saved">
+  <div class="saved-view">
+    <div class="saved-header">
+      <div class="saved-header-row">
+        <div>
+          <div class="saved-main-title">Ricette Salvate</div>
+          <div class="saved-count-label" id="saved-count-label">0 ricette</div>
+        </div>
+        <div class="search-bar-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input" placeholder="Cerca tra le ricette…" oninput="renderSaved()">
+        </div>
+      </div>
+    </div>
+    <div id="saved-container">
+      <div class="no-results">
+        <div class="empty-icon">🔖</div>
+        <div class="empty-title">Nessuna ricetta salvata</div>
+        <div class="empty-desc">Genera delle ricette e salvale con il tasto 🔖.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><strong>La Cucina</strong> · Ricette generate da AI su misura per te</footer>
+
+<script>
+/* ══ STATE ══ */
+let currentMode = 'gustosa';
+let currentCottura = 'qualsiasi';
+let currentTempo = 'qualsiasi';
+let conversationHistory = [];
+let allRecipes = [];
+let savedRecipes = JSON.parse(localStorage.getItem('cucina_saved') || '[]');
+
+/* ══ VIEWS ══ */
+function switchView(name, tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  tab.classList.add('active');
+  if (name === 'saved') renderSaved();
+}
+
+/* ══ MODE ══ */
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+  });
+});
+
+/* ══ RADIO COTTURA ══ */
+document.querySelectorAll('#cottura-group .radio-row').forEach(row => {
+  row.addEventListener('click', () => {
+    document.querySelectorAll('#cottura-group .radio-row').forEach(r => r.classList.remove('active'));
+    row.classList.add('active');
+    currentCottura = row.dataset.cottura;
+    document.getElementById('cottura-custom-wrap').classList.toggle('visible', currentCottura === '__altro__');
+  });
+});
+
+/* ══ RADIO TEMPO ══ */
+document.querySelectorAll('#tempo-group .radio-row').forEach(row => {
+  row.addEventListener('click', () => {
+    document.querySelectorAll('#tempo-group .radio-row').forEach(r => r.classList.remove('active'));
+    row.classList.add('active');
+    currentTempo = row.dataset.tempo;
+    document.getElementById('tempo-custom-wrap').classList.toggle('visible', currentTempo === '__altro__');
+  });
+});
+
+/* ══ CUCINA SWITCHES ══ */
+document.querySelectorAll('#cucina-switches .switch-row').forEach(row => {
+  row.addEventListener('click', () => {
+    row.classList.toggle('active');
+    if (row.dataset.cucina === '__altra__')
+      document.getElementById('cucina-custom-input').classList.toggle('visible', row.classList.contains('active'));
+  });
+});
+
+/* ══ PARAMS ══ */
+function getParams() {
+  const cucine = [];
+  document.querySelectorAll('#cucina-switches .switch-row.active').forEach(r => {
+    if (r.dataset.cucina === '__altra__') {
+      const v = document.getElementById('cucina-altra-text').value.trim();
+      if (v) cucine.push(v);
+    } else cucine.push(r.dataset.cucina);
+  });
+  let cottura = currentCottura;
+  if (cottura === '__altro__') cottura = document.getElementById('cottura-altra-text').value.trim() || 'qualsiasi';
+  let tempo = currentTempo;
+  if (tempo === '__altro__') tempo = document.getElementById('tempo-altro-text').value.trim() || 'qualsiasi';
+  return {
+    mode: currentMode,
+    cal:  document.getElementById('target-cal').value.trim(),
+    prot: document.getElementById('target-prot').value.trim(),
+    carb: document.getElementById('target-carb').value.trim(),
+    fat:  document.getElementById('target-fat').value.trim(),
+    ing:  document.getElementById('ingredienti').value.trim(),
+    cucine, cottura, tempo
+  };
+}
+
+/* ══ PROMPT ══ */
+function buildGeneratePrompt(params, isMore) {
+  const { mode, cal, prot, carb, fat, ing, cucine, cottura, tempo } = params;
+  const modeDesc = { gustosa:'saporita, ricca, soddisfacente (comfort food)', fit:'ad alto contenuto proteico, adatta a chi si allena', leggera:'leggera, facile da digerire, pochi grassi' }[mode];
+  let macroLine = '';
+  if (cal)  macroLine += `  - Calorie: circa ${cal} kcal\n`;
+  if (prot) macroLine += `  - Proteine: circa ${prot}g\n`;
+  if (carb) macroLine += `  - Carboidrati: circa ${carb}g\n`;
+  if (fat)  macroLine += `  - Grassi: circa ${fat}g\n`;
+  if (!macroLine) macroLine = '  - Nessun target: bilancia come ritieni opportuno.\n';
+  return `${isMore ? 'Proponi altre 3 ricette DIVERSE da quelle già generate. Stessi parametri.' : 'Proponi esattamente 3 ricette diverse.'}
+
+Parametri:
+- Tipo: ${modeDesc}
+- Target per porzione:\n${macroLine}- Ingredienti: ${ing ? 'da usare: ' + ing : 'liberi'}
+- Cucina: ${cucine.length ? cucine.join(', ') : 'libera'}
+- Cottura: ${cottura !== 'qualsiasi' ? cottura + ' (OBBLIGATORIO)' : 'qualsiasi'}
+- Tempo: ${tempo !== 'qualsiasi' ? tempo + ' (OBBLIGATORIO)' : 'qualsiasi'}
+
+Rispondi SOLO con un JSON array senza markdown:
+[{"nome":"...","cucina":"...","descrizione":"...","porzioni":2,"ingredienti":[{"qty":"200g","nome":"pollo"}],"passaggi":["Passo 1"],"valori_per_porzione":{"calorie":520,"proteine":38,"carboidrati":45,"grassi":12}}]`;
+}
+
+function buildModifyPrompt(recipe, modifyReq) {
+  return `Modifica questa ricetta secondo la richiesta dell'utente.
+Ricetta: ${recipe.nome}
+Richiesta: "${modifyReq}"
+Rispondi SOLO con un JSON array con un elemento, stesso formato originale, senza markdown:
+[{"nome":"...","cucina":"...","descrizione":"...","porzioni":2,"ingredienti":[{"qty":"...","nome":"..."}],"passaggi":["..."],"valori_per_porzione":{"calorie":0,"proteine":0,"carboidrati":0,"grassi":0}}]`;
+}
+
+/* ══ API ══ */
+async function callAPI(messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, tools: [{ type: 'web_search_20250305', name: 'web_search' }], messages })
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || `Errore API ${res.status}`); }
+  const data = await res.json();
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  return { text, content: data.content };
+}
+
+function parseRecipes(text) {
+  const clean = text.replace(/```json|```/gi, '').trim();
+  const match = clean.match(/\[[\s\S]*\]/);
+  if (!match) throw new Error('Risposta non valida dal modello');
+  return JSON.parse(match[0]);
+}
+
+/* ══ CARD ══ */
+function makeId(nome) { return nome.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+function renderCard(recipe, index, isSavedView) {
+  const delay = (index % 3) * 70;
+  const v = recipe.valori_per_porzione;
+  const id = makeId(recipe.nome);
+  const ings  = recipe.ingredienti.map(i => `<li><span class="ing-qty">${i.qty}</span>${i.nome}</li>`).join('');
+  const steps = recipe.passaggi.map(p => `<li>${p}</li>`).join('');
+  const isSaved = savedRecipes.some(r => r.nome === recipe.nome);
+  const modeBadge = recipe._mode ? `<span class="badge mode-${recipe._mode}">${recipe._mode}</span>` : '';
+
+  const actionsHtml = isSavedView
+    ? `<button class="btn-unsave" onclick="unsaveRecipe('${id}')">🗑 Rimuovi</button>
+       <button class="btn-edit-toggle" onclick="toggleModify('${id}')">✏️ Modifica</button>`
+    : `<button class="btn-save ${isSaved ? 'saved' : ''}" id="savebtn-${id}" onclick="saveRecipe('${id}',this)">${isSaved ? '✓ Salvata' : '🔖 Salva'}</button>
+       <button class="btn-edit-toggle" onclick="toggleModify('${id}')">✏️ Modifica</button>`;
+
+  return `
+<div class="recipe-card" data-id="${id}" data-nome="${recipe.nome.replace(/"/g,'&quot;')}" style="animation-delay:${delay}ms">
+  <div class="card-top">
+    <div class="card-cuisine">${recipe.cucina}</div>
+    <div class="card-name">${recipe.nome}</div>
+    <div class="card-desc">${recipe.descrizione}</div>
+    <div class="card-badges">${modeBadge}<span class="badge">${recipe.cucina}</span><span class="badge">👤 ${recipe.porzioni} porz.</span></div>
+  </div>
+  <div class="card-macros">
+    <div class="macro-item"><span class="macro-val">${v.calorie}</span><span class="macro-lbl">kcal</span></div>
+    <div class="macro-item"><span class="macro-val">${v.proteine}g</span><span class="macro-lbl">prot</span></div>
+    <div class="macro-item"><span class="macro-val">${v.carboidrati}g</span><span class="macro-lbl">carb</span></div>
+    <div class="macro-item"><span class="macro-val">${v.grassi}g</span><span class="macro-lbl">grassi</span></div>
+  </div>
+  <div class="card-body-toggle" onclick="toggleCard(this)">
+    Ingredienti &amp; Procedura <span class="toggle-arrow">▾</span>
+  </div>
+  <div class="card-body">
+    <div><div class="section-mini-title">Ingredienti</div><ul class="ingredient-list">${ings}</ul></div>
+    <div><div class="section-mini-title">Procedura</div><ol class="steps-list">${steps}</ol></div>
+  </div>
+  <div class="card-modify-area" id="modarea-${id}">
+    <div class="modify-label">Chiedi una modifica all'AI</div>
+    <div class="modify-row">
+      <input type="text" class="modify-input" id="modinput-${id}" placeholder="es. senza glutine, più proteica, meno piccante…" onkeydown="if(event.key==='Enter')modifyRecipe('${id}')">
+      <button class="btn-modify" id="modbtn-${id}" onclick="modifyRecipe('${id}')">↻ Applica</button>
+    </div>
+    <div class="modify-loader" id="modloader-${id}" style="display:none">⏳ Aggiornando la ricetta…</div>
+  </div>
+  <div class="card-actions">${actionsHtml}</div>
+</div>`;
+}
+
+function toggleCard(el) { el.closest('.recipe-card').classList.toggle('expanded'); }
+
+function toggleModify(id) {
+  const area = document.getElementById('modarea-' + id);
+  if (!area) return;
+  area.classList.toggle('visible');
+  if (area.classList.contains('visible')) document.getElementById('modinput-' + id)?.focus();
+}
+
+/* ══ MODIFICA ══ */
+async function modifyRecipe(id) {
+  const input  = document.getElementById('modinput-' + id);
+  const btn    = document.getElementById('modbtn-' + id);
+  const loader = document.getElementById('modloader-' + id);
+  if (!input || !input.value.trim()) return;
+
+  const card = document.querySelector(`.recipe-card[data-id="${id}"]`);
+  const nome = card?.dataset.nome;
+  let recipe = allRecipes.find(r => r.nome === nome) || savedRecipes.find(r => r.nome === nome);
+  if (!recipe) return;
+
+  btn.disabled = true; loader.style.display = 'block';
+  try {
+    const prompt = buildModifyPrompt(recipe, input.value.trim());
+    const { text } = await callAPI([{ role: 'user', content: prompt }]);
+    const updated = parseRecipes(text)[0];
+    updated._mode = recipe._mode || currentMode;
+
+    // update in-memory
+    const ai = allRecipes.findIndex(r => r.nome === nome);
+    if (ai !== -1) allRecipes[ai] = updated;
+    const si = savedRecipes.findIndex(r => r.nome === nome);
+    if (si !== -1) { savedRecipes[si] = updated; persistSaved(); }
+
+    // replace card
+    const isSavedView = !!card.closest('#saved-container');
+    const idx = Array.from(card.parentElement.children).indexOf(card);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderCard(updated, idx, isSavedView);
+    card.replaceWith(tmp.firstElementChild);
+    // re-expand modify area on new card
+    const newCard = document.querySelector(`.recipe-card[data-id="${makeId(updated.nome)}"]`);
+    if (newCard) { newCard.classList.add('expanded'); }
+  } catch(e) {
+    loader.textContent = '⚠️ ' + e.message;
+    loader.style.display = 'block';
+    btn.disabled = false;
+    return;
+  }
+  btn.disabled = false; loader.style.display = 'none';
+}
+
+/* ══ SALVA ══ */
+function saveRecipe(id, btn) {
+  if (btn.classList.contains('saved')) return;
+  const nome = document.querySelector(`.recipe-card[data-id="${id}"]`)?.dataset.nome;
+  const recipe = allRecipes.find(r => r.nome === nome);
+  if (!recipe) return;
+  recipe._mode = currentMode;
+  savedRecipes.push(recipe);
+  savedRecipes.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  persistSaved();
+  btn.textContent = '✓ Salvata'; btn.classList.add('saved');
+}
+
+function unsaveRecipe(id) {
+  const nome = document.querySelector(`.recipe-card[data-id="${id}"]`)?.dataset.nome;
+  savedRecipes = savedRecipes.filter(r => r.nome !== nome);
+  persistSaved(); renderSaved();
+}
+
+function persistSaved() {
+  localStorage.setItem('cucina_saved', JSON.stringify(savedRecipes));
+  const n = savedRecipes.length;
+  document.getElementById('saved-badge').textContent = n > 0 ? `(${n})` : '';
+  document.getElementById('saved-count-label').textContent = n + ' ricett' + (n === 1 ? 'a' : 'e');
+}
+
+/* ══ RENDER SAVED ══ */
+function renderSaved() {
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+  const filtered = savedRecipes.filter(r =>
+    !q || r.nome.toLowerCase().includes(q) || r.cucina.toLowerCase().includes(q) || r.descrizione.toLowerCase().includes(q)
+  );
+  const container = document.getElementById('saved-container');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-results"><div class="empty-icon">🔖</div>
+      <div class="empty-title">${q ? 'Nessun risultato' : 'Nessuna ricetta salvata'}</div>
+      <div class="empty-desc">${q ? 'Prova con un\'altra parola chiave.' : 'Genera delle ricette e salvale con il tasto 🔖.'}</div></div>`;
+  } else {
+    container.innerHTML = `<div class="cards-grid">${filtered.map((r, i) => renderCard(r, i, true)).join('')}</div>`;
+  }
+  persistSaved();
+}
+
+/* ══ GENERA ══ */
+async function generate(isMore = false) {
+  const params = getParams();
+  const prompt = buildGeneratePrompt(params, isMore);
+  const container = document.getElementById('results-container');
+  const btnGen = document.getElementById('btn-generate');
+
+  if (!isMore) {
+    conversationHistory = []; allRecipes = [];
+    container.innerHTML = `<div class="loader-state"><div class="loader-wave"><span></span><span></span><span></span><span></span></div><div class="loader-text">Sto cercando le ricette perfette per te…</div></div>`;
+  } else {
+    const l = document.createElement('div'); l.className = 'loader-state'; l.id = 'more-loader';
+    l.innerHTML = `<div class="loader-wave"><span></span><span></span><span></span><span></span></div><div class="loader-text">Cerco altre ricette…</div>`;
+    container.appendChild(l);
+  }
+
+  btnGen.disabled = true;
+  document.getElementById('btn-more')?.setAttribute('disabled', '');
+
+  try {
+    const messages = isMore
+      ? [...conversationHistory, { role: 'user', content: prompt }]
+      : [{ role: 'user', content: prompt }];
+    const { text, content } = await callAPI(messages);
+    conversationHistory = [...messages, { role: 'assistant', content }];
+
+    const recipes = parseRecipes(text);
+    recipes.forEach(r => r._mode = currentMode);
+
+    if (!isMore) {
+      allRecipes = recipes;
+      container.innerHTML = `<div class="cards-grid" id="cards-grid">${recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>
+        <div class="btn-more-wrap"><button class="btn-more" id="btn-more" onclick="generate(true)">✦ Creane altre</button></div>`;
+    } else {
+      document.getElementById('more-loader')?.remove();
+      const grid = document.getElementById('cards-grid');
+      const start = allRecipes.length;
+      allRecipes.push(...recipes);
+      recipes.forEach((r, i) => grid.insertAdjacentHTML('beforeend', renderCard(r, start + i, false)));
+      document.getElementById('btn-more')?.removeAttribute('disabled');
+    }
+  } catch(e) {
+    const msg = `<div class="error-box">⚠️ ${e.message}</div>`;
+    if (!isMore) container.innerHTML = msg;
+    else { document.getElementById('more-loader')?.remove(); container.insertAdjacentHTML('beforeend', msg); }
+  } finally {
+    btnGen.disabled = false;
+    document.getElementById('btn-more')?.removeAttribute('disabled');
+  }
+}
+
+document.getElementById('btn-generate').addEventListener('click', () => generate(false));
+persistSaved();
+</script>
+</body>
+</html>
