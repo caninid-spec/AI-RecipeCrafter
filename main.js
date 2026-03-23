@@ -24,7 +24,7 @@
      sostituisci l'URL qui sotto con quello del tuo Worker.
      Es: 'https://cucina-ai-proxy.mario.workers.dev/api/chat'
   ══════════════════════════════════════════════════════════════ */
-  const PROXY_URL = 'https:/https://cucina-ai-proxy.canini-d.workers.dev/api/chat';
+  const PROXY_URL = 'https://cucina-ai-proxy.canini-d.workers.dev/api/chat';
 
 
   /* ══════════════════════════════════════════════════════════════
