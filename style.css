@@ -74,6 +74,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -82,6 +83,8 @@ body {
   color: var(--text);
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 
@@ -196,6 +199,7 @@ body {
 /* -- Page wrap (grid a due colonne) -- */
 .page-wrap {
   max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
   padding: 36px 20px 80px;
   display: grid;
@@ -232,6 +236,10 @@ footer strong { color: var(--blue-light); }
   top: 76px;
   max-height: calc(100vh - 96px);
   overflow-y: auto;
+  overflow-x: hidden;   /* clip qualsiasi contenuto che sfori lateralmente */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .config-panel::-webkit-scrollbar       { width: 3px; }
@@ -424,6 +432,7 @@ footer strong { color: var(--blue-light); }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 9px;
+  width: 100%;
 }
 
 .input-group      { display: flex; flex-direction: column; gap: 4px; }
@@ -447,6 +456,8 @@ footer strong { color: var(--blue-light); }
   color: var(--text);
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s;
+  width: 100%;          /* impedisce agli input di espandersi oltre il contenitore */
+  min-width: 0;         /* fix per input in grid/flex che ignorano il contenitore */
 }
 
 .input-field:focus {
@@ -1080,104 +1091,177 @@ textarea.input-field {
   }
 }
 
-/* -- Mobile (< 600px): layout a colonna singola, testo e padding ridotti -- */
+/* -- Mobile (< 600px) ----------------------------------------
+   Regola fondamentale: niente elemento deve essere più largo
+   di 100vw. Ogni larghezza fissa è convertita in 100%.
+------------------------------------------------------------- */
 @media (max-width: 600px) {
+
+  /* Blocca l'overflow a livello radice */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
 
   /* Header */
   .site-header {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
   .header-inner {
     height: 56px;
     gap: 10px;
+    width: 100%;
   }
 
   .logo {
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-    gap: 8px;
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
+    gap: 7px;
   }
 
   .logo-sub {
-    font-size: 0.65rem;
-    padding-left: 14px;
+    font-size: 0.63rem;
+    padding-left: 13px;
   }
 
   .nav-tab {
     padding: 5px 10px;
     font-size: 0.72rem;
+    white-space: nowrap;
   }
 
   .nav-tab-badge {
-    display: none; /* evita overflow su schermi piccoli */
+    display: none;
   }
 
-  /* Layout pagina */
+  /* Layout pagina — padding orizzontale ridotto */
   .page-wrap {
-    padding: 16px 12px 48px;
-    gap: 16px;
+    padding: 14px 12px 48px;
+    gap: 14px;
+    width: 100%;
   }
 
-  /* Config panel */
+  /* Config panel — si adatta al 100% senza mai sforare */
   .config-panel {
-    padding: 18px 14px;
+    padding: 16px 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Griglia input macros: una colonna sotto i 400px,
+     due colonne tra 400 e 600px */
+  .input-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* Tutti i campi input occupano il 100% della cella */
+  .input-field {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.84rem;
+    padding: 7px 9px;
+  }
+
+  /* Etichette più compatte */
+  .input-label {
+    font-size: 0.65rem;
+  }
+
+  /* Radio e switch: testo non va a capo */
+  .radio-label,
+  .switch-label {
+    font-size: 0.8rem;
   }
 
   /* Cards: colonna singola, padding interno ridotto */
   .cards-grid {
     grid-template-columns: 1fr;
     gap: 14px;
+    width: 100%;
+  }
+
+  .recipe-card {
+    width: 100%;
+    min-width: 0;
   }
 
   .card-top {
-    padding: 14px 14px 12px;
+    padding: 14px 12px 12px;
   }
 
   .card-name {
     font-size: 1.05rem;
+    word-break: break-word;
+  }
+
+  .card-desc {
+    font-size: 0.79rem;
   }
 
   .card-macros {
-    padding: 10px 14px;
+    padding: 10px 12px;
   }
 
   .macro-val {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
+  }
+
+  .macro-lbl {
+    font-size: 0.54rem;
   }
 
   .card-body {
-    padding: 12px 14px 0;
+    padding: 12px 12px 0;
+  }
+
+  .ingredient-list li,
+  .steps-list li {
+    font-size: 0.8rem;
   }
 
   .card-modify-area {
-    padding: 10px 14px;
+    padding: 10px 12px;
+  }
+
+  .modify-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .modify-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .btn-modify {
+    width: 100%;
   }
 
   .card-actions {
-    padding: 10px 14px 12px;
+    padding: 10px 12px 12px;
     gap: 6px;
   }
 
   .btn-save,
   .btn-edit-toggle,
   .btn-unsave {
-    font-size: 0.71rem;
-    padding: 6px 8px;
+    font-size: 0.7rem;
+    padding: 6px 6px;
   }
 
   /* Saved view */
   .saved-view {
-    padding: 20px 12px 48px;
+    padding: 18px 12px 48px;
+    width: 100%;
   }
 
   .saved-header-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-  }
-
-  .search-input {
     width: 100%;
   }
 
@@ -1185,15 +1269,39 @@ textarea.input-field {
     width: 100%;
   }
 
+  .search-input {
+    width: 100%;
+  }
+
   /* Bottone genera */
   .btn-generate {
     font-size: 0.68rem;
     padding: 12px;
+    width: 100%;
   }
 
   /* Bottone "Creane altre" */
   .btn-more {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* -- Schermi molto piccoli (< 400px): input macros a colonna singola -- */
+@media (max-width: 400px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .input-group.full {
+    grid-column: 1;
+  }
+
+  .logo {
+    font-size: 0.82rem;
+  }
+
+  .logo-sub {
+    font-size: 0.6rem;
   }
 }
