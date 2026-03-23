@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Cucina — Ricette su Misura</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     HEADER
+════════════════════════════════════════ -->
+<header class="site-header" role="banner">
+  <div class="header-inner">
+    <h1 class="site-title">
+      <a href="#" class="logo" aria-label="La Cucina — torna all'inizio">
+        <span class="logo-dot" aria-hidden="true"></span>La Cucina
+      </a>
+    </h1>
+    <p class="logo-sub" aria-hidden="true">Ricette su Misura</p>
+    <nav class="nav-tabs" role="tablist" aria-label="Sezioni principali">
+      <button class="nav-tab active" role="tab" aria-selected="true" aria-controls="view-generate" id="tab-generate">
+        <span aria-hidden="true">✦</span> Genera
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" aria-controls="view-saved" id="tab-saved">
+        <span aria-hidden="true">🔖</span> Salvate
+        <span class="nav-tab-badge" id="saved-badge" aria-live="polite" aria-label="Numero ricette salvate"></span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+
+<!-- ════════════════════════════════════════
+     VIEW: GENERA
+════════════════════════════════════════ -->
+<div class="view active" id="view-generate" role="tabpanel" aria-labelledby="tab-generate">
+  <div class="page-wrap">
+
+    <!-- ── Pannello configurazione ── -->
+    <aside class="config-panel" aria-label="Parametri ricetta">
+      <div class="panel-title" aria-hidden="true">Parametri</div>
+
+      <!-- Tipo di cena -->
+      <section class="p-section">
+        <h2 class="p-section-title">✦ Tipo di Cena</h2>
+        <div class="mode-switcher" role="group" aria-label="Seleziona tipo di cena" id="mode-switcher">
+          <button class="mode-btn active" data-mode="gustosa" aria-pressed="true">
+            <span class="m-icon" aria-hidden="true">🍽️</span>Gustosa
+          </button>
+          <button class="mode-btn" data-mode="fit" aria-pressed="false">
+            <span class="m-icon" aria-hidden="true">💪</span>Fit
+          </button>
+          <button class="mode-btn" data-mode="leggera" aria-pressed="false">
+            <span class="m-icon" aria-hidden="true">🌿</span>Leggera
+          </button>
+        </div>
+      </section>
+
+      <!-- Target nutrizionale -->
+      <section class="p-section">
+        <h2 class="p-section-title">◈ Target Nutrizionale</h2>
+        <div class="input-grid">
+          <div class="input-group full">
+            <label class="input-label" for="target-cal">Calorie (kcal)</label>
+            <input type="number" id="target-cal" class="input-field" placeholder="es. 600" min="100" max="3000" aria-describedby="cal-hint">
+            <span class="input-hint" id="cal-hint">Lascia vuoto → decide l'AI</span>
+          </div>
+          <div class="input-group">
+            <label class="input-label" for="target-prot">Proteine (g)</label>
+            <input type="number" id="target-prot" class="input-field" placeholder="es. 35" min="0">
+          </div>
+          <div class="input-group">
+            <label class="input-label" for="target-carb">Carboidrati (g)</label>
+            <input type="number" id="target-carb" class="input-field" placeholder="es. 60" min="0">
+          </div>
+          <div class="input-group full">
+            <label class="input-label" for="target-fat">Grassi (g)</label>
+            <input type="number" id="target-fat" class="input-field" placeholder="es. 20" min="0">
+          </div>
+        </div>
+      </section>
+
+      <!-- Tipo di cottura -->
+      <section class="p-section">
+        <h2 class="p-section-title">🔥 Tipo di Cottura</h2>
+        <div class="radio-group" role="radiogroup" aria-label="Metodo di cottura" id="cottura-group">
+          <div class="radio-row active" role="radio" aria-checked="true"  tabindex="0"  data-cottura="qualsiasi">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">🍳</span> Qualsiasi</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-cottura="friggitrice ad aria">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">🌀</span> Solo friggitrice ad aria</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-cottura="padella">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">🥘</span> Solo padella</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-cottura="microonde">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">📡</span> Solo microonde</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-cottura="__altro__">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">✏️</span> Altro…</span>
+          </div>
+        </div>
+        <div class="extra-input-wrap" id="cottura-custom-wrap">
+          <input type="text" id="cottura-altra-text" class="input-field" placeholder="es. forno, pentola a pressione…" aria-label="Specifica metodo di cottura">
+        </div>
+      </section>
+
+      <!-- Tempo di preparazione -->
+      <section class="p-section">
+        <h2 class="p-section-title">⏱ Tempo di Preparazione</h2>
+        <div class="radio-group" role="radiogroup" aria-label="Tempo massimo di preparazione" id="tempo-group">
+          <div class="radio-row active" role="radio" aria-checked="true"  tabindex="0"  data-tempo="qualsiasi">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">⏳</span> Qualsiasi</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-tempo="meno di 10 minuti">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">⚡</span> Meno di 10 minuti</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-tempo="meno di 20 minuti">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">🕐</span> Meno di 20 minuti</span>
+          </div>
+          <div class="radio-row" role="radio" aria-checked="false" tabindex="-1" data-tempo="__altro__">
+            <div class="radio-dot" aria-hidden="true"></div>
+            <span class="radio-label"><span aria-hidden="true">✏️</span> Altro…</span>
+          </div>
+        </div>
+        <div class="extra-input-wrap" id="tempo-custom-wrap">
+          <input type="text" id="tempo-altro-text" class="input-field" placeholder="es. meno di 45 minuti…" aria-label="Specifica tempo di preparazione">
+        </div>
+      </section>
+
+      <!-- Ingredienti -->
+      <section class="p-section">
+        <h2 class="p-section-title">◉ Ingredienti Disponibili</h2>
+        <div class="input-group">
+          <label class="input-label" for="ingredienti">Ingredienti</label>
+          <textarea id="ingredienti" class="input-field" placeholder="es. pollo, zucchine, riso basmati, limone…" aria-describedby="ing-hint"></textarea>
+          <span class="input-hint" id="ing-hint">Separa con virgola. Lascia vuoto per ricette libere.</span>
+        </div>
+      </section>
+
+      <!-- Ispirazione culinaria -->
+      <section class="p-section">
+        <h2 class="p-section-title">◎ Ispirazione Culinaria</h2>
+        <div class="switch-group" id="cucina-switches" role="group" aria-label="Tipi di cucina">
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="italiana">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇮🇹</span>Italiana</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="messicana">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇲🇽</span>Messicana</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="cinese">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇨🇳</span>Cinese</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="giapponese">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇯🇵</span>Giapponese</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="thai">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇹🇭</span>Thai</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="vietnamita">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🇻🇳</span>Vietnamita</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+          <div class="switch-row" role="checkbox" aria-checked="false" tabindex="0" data-cucina="__altra__">
+            <span class="switch-label"><span class="icon" aria-hidden="true">🌍</span>Altra cucina…</span>
+            <div class="toggle-pill" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="extra-input-wrap" id="cucina-custom-wrap">
+          <input type="text" id="cucina-altra-text" class="input-field" placeholder="es. Peruviana, Turca…" aria-label="Specifica tipo di cucina">
+        </div>
+      </section>
+
+      <button class="btn-generate" id="btn-generate">Genera Ricette ✦</button>
+    </aside>
+
+    <!-- ── Area risultati ── -->
+    <main id="main-results" aria-label="Ricette generate">
+      <div class="results-header">
+        <h2 class="results-title">Le tue ricette</h2>
+      </div>
+      <div id="results-container" aria-live="polite" aria-atomic="false">
+        <div class="empty-state" role="status">
+          <span class="empty-icon" aria-hidden="true">🍲</span>
+          <p class="empty-title">Nessuna ricetta ancora</p>
+          <p class="empty-desc">Configura i parametri e premi <em>Genera Ricette</em> per iniziare.</p>
+        </div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     VIEW: SALVATE
+════════════════════════════════════════ -->
+<div class="view" id="view-saved" role="tabpanel" aria-labelledby="tab-saved">
+  <div class="saved-view">
+    <header class="saved-header">
+      <div class="saved-header-row">
+        <div>
+          <h2 class="saved-main-title">Ricette Salvate</h2>
+          <p class="saved-count-label" id="saved-count-label" aria-live="polite">0 ricette</p>
+        </div>
+        <div class="search-bar-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <label for="search-input" class="visually-hidden">Cerca ricette salvate</label>
+          <input type="search" class="search-input" id="search-input" placeholder="Cerca tra le ricette…" autocomplete="off">
+        </div>
+      </div>
+    </header>
+    <div id="saved-container" aria-live="polite" aria-atomic="false">
+      <div class="no-results" role="status">
+        <span class="empty-icon" aria-hidden="true">🔖</span>
+        <p class="empty-title">Nessuna ricetta salvata</p>
+        <p class="empty-desc">Genera delle ricette e salvale con il tasto 🔖.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer role="contentinfo">
+  <strong>La Cucina</strong> · Ricette generate da AI su misura per te
+</footer>
+
+<!-- Script — caricato dopo il DOM (defer implicito per posizione) -->
+<script src="main.js"></script>
+</body>
+</html>
