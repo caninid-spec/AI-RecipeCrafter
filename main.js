@@ -18,6 +18,14 @@
 (function () {
   'use strict';
 
+  /* ══════════════════════════════════════════════════════════════
+     CONFIGURAZIONE
+     Dopo aver deployato il Cloudflare Worker (vedi worker.js),
+     sostituisci l'URL qui sotto con quello del tuo Worker.
+     Es: 'https://cucina-ai-proxy.mario.workers.dev/api/chat'
+  ══════════════════════════════════════════════════════════════ */
+  const PROXY_URL = 'https:/https://cucina-ai-proxy.canini-d.workers.dev/api/chat';
+
 
   /* ══════════════════════════════════════════════════════════════
      1. STATE — unica fonte di verità dell'applicazione
@@ -256,24 +264,19 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
   ══════════════════════════════════════════════════════════════ */
 
   /**
-   * Invia messaggi all'API Anthropic e restituisce { text, content }.
-   * NOTA: in produzione la chiave API deve essere gestita da un backend proxy.
+   * Invia messaggi al proxy Cloudflare Worker, che li inoltra ad Anthropic.
+   * La chiave API risiede solo nel Worker (mai esposta al browser).
    */
   async function callAPI(messages) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch(PROXY_URL, {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages,
-      }),
+      body: JSON.stringify({ messages }),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Errore API ${response.status}`);
+      throw new Error(err.error?.message || `Errore proxy ${response.status}`);
     }
 
     const data = await response.json();

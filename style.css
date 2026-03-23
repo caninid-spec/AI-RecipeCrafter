@@ -105,7 +105,15 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  height: 60px;
+  height: 64px;
+}
+
+/* Blocco logo: raggruppa nome + sottotitolo in colonna */
+.logo-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
 }
 
 /* Logo come <h1><a> per semantica corretta */
@@ -126,6 +134,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  line-height: 1;
 }
 
 .logo:hover { color: var(--blue-light); }
@@ -135,13 +144,17 @@ body {
   height: 6px;
   border-radius: 50%;
   background: var(--blue-light);
+  flex-shrink: 0;
 }
 
 .logo-sub {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 0.88rem;
+  font-size: 0.72rem;
   color: var(--muted-inv);
+  /* rientra per allinearsi visivamente al testo del logo (dot + gap = ~16px) */
+  padding-left: 16px;
+  line-height: 1;
 }
 
 /* -- Nav Tabs -- */
@@ -613,7 +626,7 @@ textarea.input-field {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(278px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 278px), 1fr));
   gap: 18px;
   margin-bottom: 24px;
 }
@@ -1053,9 +1066,12 @@ textarea.input-field {
    9. RESPONSIVE
 ════════════════════════════════════════ */
 
+/* -- Tablet (< 900px): pannello passa sopra ai risultati -- */
 @media (max-width: 900px) {
   .page-wrap {
     grid-template-columns: 1fr;
+    padding: 24px 16px 60px;
+    gap: 20px;
   }
 
   .config-panel {
@@ -1064,12 +1080,120 @@ textarea.input-field {
   }
 }
 
+/* -- Mobile (< 600px): layout a colonna singola, testo e padding ridotti -- */
 @media (max-width: 600px) {
+
+  /* Header */
+  .site-header {
+    padding: 0 16px;
+  }
+
+  .header-inner {
+    height: 56px;
+    gap: 10px;
+  }
+
+  .logo {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    gap: 8px;
+  }
+
+  .logo-sub {
+    font-size: 0.65rem;
+    padding-left: 14px;
+  }
+
+  .nav-tab {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
+
+  .nav-tab-badge {
+    display: none; /* evita overflow su schermi piccoli */
+  }
+
+  /* Layout pagina */
+  .page-wrap {
+    padding: 16px 12px 48px;
+    gap: 16px;
+  }
+
+  /* Config panel */
+  .config-panel {
+    padding: 18px 14px;
+  }
+
+  /* Cards: colonna singola, padding interno ridotto */
   .cards-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .card-top {
+    padding: 14px 14px 12px;
+  }
+
+  .card-name {
+    font-size: 1.05rem;
+  }
+
+  .card-macros {
+    padding: 10px 14px;
+  }
+
+  .macro-val {
+    font-size: 0.82rem;
+  }
+
+  .card-body {
+    padding: 12px 14px 0;
+  }
+
+  .card-modify-area {
+    padding: 10px 14px;
+  }
+
+  .card-actions {
+    padding: 10px 14px 12px;
+    gap: 6px;
+  }
+
+  .btn-save,
+  .btn-edit-toggle,
+  .btn-unsave {
+    font-size: 0.71rem;
+    padding: 6px 8px;
+  }
+
+  /* Saved view */
+  .saved-view {
+    padding: 20px 12px 48px;
+  }
+
+  .saved-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .search-input {
-    width: 180px;
+    width: 100%;
+  }
+
+  .search-bar-wrap {
+    width: 100%;
+  }
+
+  /* Bottone genera */
+  .btn-generate {
+    font-size: 0.68rem;
+    padding: 12px;
+  }
+
+  /* Bottone "Creane altre" */
+  .btn-more {
+    width: 100%;
+    justify-content: center;
   }
 }
