@@ -3,7 +3,7 @@
   "short_name": "La Cucina",
   "description": "Genera ricette personalizzate con l'intelligenza artificiale",
   "lang": "it",
-  "start_url": "./AI-RecipeCrafter/",
+  "start_url": "/AI-RecipeCrafter/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#1D4E6F",
