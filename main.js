@@ -293,14 +293,14 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
   ══════════════════════════════════════════════════════════════ */
 
   /**
-   * Invia messaggi al proxy Cloudflare Worker, che li inoltra ad Anthropic.
-   * La chiave API risiede solo nel Worker (mai esposta al browser).
+   * Invia messaggi al proxy Cloudflare Worker → OpenAI.
+   * Legge la risposta nel formato OpenAI (choices[0].message.content).
    */
-  async function callAPI(messages) {
+  async function callAPI(messages, aiModel) {
     const response = await fetch(PROXY_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, model: aiModel || state.aiModel }),
     });
 
     if (!response.ok) {
@@ -309,20 +309,38 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
     }
 
     const data = await response.json();
-    const text = (data.content || [])
-      .filter(block => block.type === 'text')
-      .map(block => block.text)
-      .join('');
 
-    return { text, content: data.content };
+    // OpenAI restituisce choices[0].message.content (stringa diretta)
+    const text = data.choices?.[0]?.message?.content?.trim() || '';
+
+    if (!text) {
+      // Log per debug — visibile nella console del browser
+      console.error('Risposta OpenAI vuota:', JSON.stringify(data));
+      throw new Error('Il modello ha restituito una risposta vuota. Riprova.');
+    }
+
+    return { text };
   }
 
-  /** Estrae e parsa l'array JSON di ricette dalla risposta testuale. */
+  /** Estrae e parsa l'array JSON di ricette dalla risposta testuale.
+   *  Gestisce markdown, testo prima/dopo il JSON, e JSON malformato. */
   function parseRecipes(text) {
-    const clean = text.replace(/```json|```/gi, '').trim();
-    const match = clean.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('Risposta non valida dal modello');
-    return JSON.parse(match[0]);
+    // 1. Rimuove i code block markdown (```json ... ``` o ``` ... ```)
+    let clean = text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+
+    // 2. Cerca il primo [ ... ] che contenga almeno un oggetto {}
+    const match = clean.match(/\[[\s\S]*?\{[\s\S]*?\}[\s\S]*?\]/);
+    if (!match) {
+      console.error('JSON non trovato nella risposta:', clean);
+      throw new Error('Risposta non valida dal modello. Riprova.');
+    }
+
+    try {
+      return JSON.parse(match[0]);
+    } catch (e) {
+      console.error('JSON non parsabile:', match[0], e);
+      throw new Error('Risposta non valida dal modello. Riprova.');
+    }
   }
 
 
