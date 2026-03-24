@@ -76,6 +76,7 @@
       carb:         _val('target-carb'),
       fat:          _val('target-fat'),
       ing:          _val('ingredienti'),
+      restrizioni:  _val('restrizioni'),
       cucinaAltra:  _val('cucina-altra-text'),
       cotturaAltra: _val('cottura-altra-text'),
       tempoAltro:   _val('tempo-altro-text'),
@@ -129,6 +130,7 @@
       if (saved[k]) document.getElementById('target-' + k).value = saved[k];
     });
     if (saved.ing)          document.getElementById('ingredienti').value        = saved.ing;
+    if (saved.restrizioni) document.getElementById('restrizioni').value        = saved.restrizioni;
     if (saved.cucinaAltra)  document.getElementById('cucina-altra-text').value  = saved.cucinaAltra;
     if (saved.cotturaAltra) document.getElementById('cottura-altra-text').value = saved.cotturaAltra;
     if (saved.tempoAltro)   document.getElementById('tempo-altro-text').value   = saved.tempoAltro;
@@ -220,7 +222,8 @@
       prot:  _val('target-prot'),
       carb:  _val('target-carb'),
       fat:   _val('target-fat'),
-      ing:   _val('ingredienti'),
+      ing:          _val('ingredienti'),
+      restrizioni:  _val('restrizioni'),
       cucine,
       cottura,
       tempo,
@@ -244,7 +247,7 @@
    * @param {boolean} isMore — true se è una richiesta "Creane altre"
    */
   function buildGeneratePrompt(params, isMore) {
-    const { mode, cal, prot, carb, fat, ing, cucine, cottura, tempo } = params;
+    const { mode, taste, cal, prot, carb, fat, ing, restrizioni, cucine, cottura, tempo } = params;
 
     let macroLine = '';
     if (cal)  macroLine += `  - Calorie: circa ${cal} kcal\n`;
@@ -265,6 +268,7 @@ Parametri:
 - Cucina: ${cucine.length ? cucine.join(', ') : 'libera'}
 - Cottura: ${cottura !== 'qualsiasi' ? cottura + ' (OBBLIGATORIO)' : 'qualsiasi'}
 - Tempo: ${tempo !== 'qualsiasi' ? tempo + ' (OBBLIGATORIO)' : 'qualsiasi'}
+- Restrizioni: ${restrizioni ? restrizioni + ' (RISPETTA RIGOROSAMENTE)' : 'nessuna'}
 
 Rispondi SOLO con un JSON array senza markdown:
 [{"nome":"...","cucina":"...","descrizione":"...","porzioni":2,"ingredienti":[{"qty":"200g","nome":"pollo"}],"passaggi":["Passo 1"],"valori_per_porzione":{"calorie":520,"proteine":38,"carboidrati":45,"grassi":12}}]`;
@@ -615,7 +619,7 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
     // Reset — azzera tutti i parametri e il localStorage del form
     document.getElementById('btn-reset').addEventListener('click', () => {
       // Svuota tutti gli input testuali e numerici
-      ['target-cal','target-prot','target-carb','target-fat','ingredienti',
+      ['target-cal','target-prot','target-carb','target-fat','ingredienti','restrizioni',
        'cucina-altra-text','cottura-altra-text','tempo-altro-text'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
@@ -706,7 +710,7 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
 
     // Autosave su ogni modifica testuale
     ['target-cal', 'target-prot', 'target-carb', 'target-fat', 'ingredienti',
-     'cucina-altra-text', 'cottura-altra-text', 'tempo-altro-text']
+     'cucina-altra-text', 'cottura-altra-text', 'tempo-altro-text', 'restrizioni']
       .forEach(id => document.getElementById(id)?.addEventListener('input', saveFormState));
   }
 
