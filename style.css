@@ -245,6 +245,14 @@ footer strong { color: var(--blue-light); }
 .config-panel::-webkit-scrollbar       { width: 3px; }
 .config-panel::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
 
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
 .panel-title {
   font-family: var(--font-display);
   font-size: 0.68rem;
@@ -252,10 +260,11 @@ footer strong { color: var(--blue-light); }
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .panel-title::after {
@@ -263,6 +272,27 @@ footer strong { color: var(--blue-light); }
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+.btn-reset {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--navy);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+
+.btn-reset:hover {
+  background: var(--navy);
+  color: var(--text-inv);
+  border-color: var(--navy);
 }
 
 /* -- Sezioni interne al panel -- */
@@ -277,6 +307,43 @@ footer strong { color: var(--blue-light); }
   padding-bottom: 7px;
   border-bottom: 1px solid var(--border-soft);
 }
+
+/* -- Taste tabs (Salato / Dolce) -- */
+.taste-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.taste-tab {
+  padding: 10px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.taste-tab:hover { border-color: var(--border-accent); color: var(--text); }
+
+.taste-tab.active,
+.taste-tab[aria-pressed="true"] {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--text-inv);
+  font-weight: 600;
+}
+
+.taste-tab:focus-visible { outline: 2px solid var(--navy-mid); outline-offset: 2px; }
 
 /* -- Mode switcher (Gustosa / Fit / Leggera) -- */
 .mode-switcher {
@@ -482,6 +549,52 @@ textarea.input-field {
 /* -- Wrapper per input "Altro" (nascosto finché non selezionato) -- */
 .extra-input-wrap         { margin-top: 7px; display: none; }
 .extra-input-wrap.visible { display: flex; }
+
+/* -- Model segment control (GPT-4o mini / GPT-4.1 mini) -- */
+.model-segment {
+  display: flex;
+  background: var(--bg2);
+  border-radius: calc(var(--radius) + 2px);
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--border);
+}
+
+.model-seg-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.model-seg-btn:hover { color: var(--text); }
+
+.model-seg-btn.active,
+.model-seg-btn[aria-pressed="true"] {
+  background: var(--navy);
+  color: var(--text-inv);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(29, 78, 111, 0.25);
+}
+
+.model-seg-btn:focus-visible { outline: 2px solid var(--navy-mid); outline-offset: 1px; }
+
+.model-seg-hint {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
+}
 
 /* -- Bottone Genera -- */
 .btn-generate {

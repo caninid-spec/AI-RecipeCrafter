@@ -67,6 +67,8 @@
   function saveFormState() {
     const formData = {
       mode:         state.mode,
+      taste:        state.taste,
+      aiModel:      state.aiModel,
       cottura:      state.cottura,
       tempo:        state.tempo,
       cal:          _val('target-cal'),
@@ -89,7 +91,30 @@
     try { saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.form)); } catch { return; }
     if (!saved) return;
 
-    // Tipo di cena
+    // Taste (Salato / Dolce)
+    if (saved.taste) {
+      state.taste = saved.taste;
+      document.querySelectorAll('.taste-tab').forEach(btn => {
+        const active = btn.dataset.taste === saved.taste;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active);
+      });
+    }
+
+    // Modello AI
+    const MODEL_HINTS_RESTORE = { 'gpt-4o-mini': 'Standard · economico', 'gpt-4.1-mini': 'Avanzato · cucine particolari' };
+    if (saved.aiModel) {
+      state.aiModel = saved.aiModel;
+      document.querySelectorAll('.model-seg-btn').forEach(btn => {
+        const active = btn.dataset.model === saved.aiModel;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active);
+      });
+      const hint = document.getElementById('model-seg-hint');
+      if (hint) hint.textContent = MODEL_HINTS_RESTORE[saved.aiModel] || '';
+    }
+
+    // Tipo di ricetta
     if (saved.mode) {
       state.mode = saved.mode;
       document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -493,7 +518,7 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
 
     try {
       const prompt  = buildModifyPrompt(recipe, input.value.trim());
-      const { text } = await callAPI([{ role: 'user', content: prompt }]);
+      const { text } = await callAPI([{ role: 'user', content: prompt }], state.aiModel);
       const updated  = parseRecipes(text)[0];
       updated._mode  = recipe._mode || state.mode;
 
@@ -560,6 +585,87 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
   ══════════════════════════════════════════════════════════════ */
 
   function initFormControls() {
+    // Taste (Salato / Dolce)
+    document.getElementById('taste-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.taste-tab');
+      if (!btn) return;
+      document.querySelectorAll('.taste-tab').forEach(b => {
+        b.classList.remove('active'); b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true');
+      state.taste = btn.dataset.taste;
+      saveFormState();
+    });
+
+    // Modello AI — segmented control
+    const MODEL_HINTS = { 'gpt-4o-mini': 'Standard · economico', 'gpt-4.1-mini': 'Avanzato · cucine particolari' };
+    document.getElementById('model-switcher').addEventListener('click', e => {
+      const btn = e.target.closest('.model-seg-btn');
+      if (!btn) return;
+      document.querySelectorAll('.model-seg-btn').forEach(b => {
+        b.classList.remove('active'); b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true');
+      state.aiModel = btn.dataset.model;
+      const hint = document.getElementById('model-seg-hint');
+      if (hint) hint.textContent = MODEL_HINTS[state.aiModel] || '';
+      saveFormState();
+    });
+
+    // Reset — azzera tutti i parametri e il localStorage del form
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      // Svuota tutti gli input testuali e numerici
+      ['target-cal','target-prot','target-carb','target-fat','ingredienti',
+       'cucina-altra-text','cottura-altra-text','tempo-altro-text'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      // Ripristina taste a Salato
+      state.taste = 'salato';
+      document.querySelectorAll('.taste-tab').forEach(b => {
+        const active = b.dataset.taste === 'salato';
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-pressed', active);
+      });
+
+      // Ripristina mode a Gustosa
+      state.mode = 'gustosa';
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        const active = b.dataset.mode === 'gustosa';
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-pressed', active);
+      });
+
+      // Ripristina modello AI a gpt-4o-mini
+      state.aiModel = 'gpt-4o-mini';
+      document.querySelectorAll('.model-seg-btn').forEach(b => {
+        const active = b.dataset.model === 'gpt-4o-mini';
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-pressed', active);
+      });
+      const hintReset = document.getElementById('model-seg-hint');
+      if (hintReset) hintReset.textContent = 'Standard · economico';
+
+      // Ripristina radio cottura a "qualsiasi"
+      _activateRadio('cottura-group', 'cottura', 'qualsiasi');
+      document.getElementById('cottura-custom-wrap').classList.remove('visible');
+
+      // Ripristina radio tempo a "qualsiasi"
+      _activateRadio('tempo-group', 'tempo', 'qualsiasi');
+      document.getElementById('tempo-custom-wrap').classList.remove('visible');
+
+      // Deseleziona tutte le cucine
+      document.querySelectorAll('#cucina-switches .switch-row').forEach(r => {
+        r.classList.remove('active');
+        r.setAttribute('aria-checked', 'false');
+      });
+      document.getElementById('cucina-custom-wrap').classList.remove('visible');
+
+      // Pulisce il localStorage del form
+      localStorage.removeItem('cucina_form_state');
+    });
+
     // Mode (Gustosa / Fit / Leggera)
     document.getElementById('mode-switcher').addEventListener('click', e => {
       const btn = e.target.closest('.mode-btn');
@@ -719,8 +825,8 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
         ? [...state.conversation, { role: 'user', content: prompt }]
         : [{ role: 'user', content: prompt }];
 
-      const { text, content } = await callAPI(messages);
-      state.conversation = [...messages, { role: 'assistant', content }];
+      const { text } = await callAPI(messages, params.aiModel);
+      state.conversation = [...messages, { role: 'assistant', content: text }];
 
       const recipes = parseRecipes(text);
       recipes.forEach(r => { r._mode = state.mode; });

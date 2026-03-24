@@ -4,12 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>La Cucina — Ricette su Misura</title>
-
-  <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -48,12 +44,31 @@
 
     <!-- ── Pannello configurazione ── -->
     <aside class="config-panel" aria-label="Parametri ricetta">
-      <div class="panel-title" aria-hidden="true">Parametri</div>
 
-      <!-- Tipo di cena -->
+      <!-- Barra superiore: titolo + reset -->
+      <div class="panel-header">
+        <div class="panel-title" aria-hidden="true">Parametri</div>
+        <button class="btn-reset" id="btn-reset" aria-label="Reimposta tutti i parametri">
+          <span aria-hidden="true">↺</span> Reset
+        </button>
+      </div>
+
+      <!-- ── Salato / Dolce ── -->
       <section class="p-section">
-        <h2 class="p-section-title">✦ Tipo di Cena</h2>
-        <div class="mode-switcher" role="group" aria-label="Seleziona tipo di cena" id="mode-switcher">
+        <div class="taste-tabs" role="group" aria-label="Categoria ricetta" id="taste-tabs">
+          <button class="taste-tab active" data-taste="salato" aria-pressed="true">
+            <span aria-hidden="true">🧂</span> Salato
+          </button>
+          <button class="taste-tab" data-taste="dolce" aria-pressed="false">
+            <span aria-hidden="true">🍰</span> Dolce
+          </button>
+        </div>
+      </section>
+
+      <!-- ── Tipo di ricetta ── -->
+      <section class="p-section">
+        <h2 class="p-section-title">✦ Tipo di Ricetta</h2>
+        <div class="mode-switcher" role="group" aria-label="Seleziona tipo di ricetta" id="mode-switcher">
           <button class="mode-btn active" data-mode="gustosa" aria-pressed="true">
             <span class="m-icon" aria-hidden="true">🍽️</span>Gustosa
           </button>
@@ -66,14 +81,13 @@
         </div>
       </section>
 
-      <!-- Target nutrizionale -->
+      <!-- ── Target nutrizionale ── -->
       <section class="p-section">
         <h2 class="p-section-title">◈ Target Nutrizionale</h2>
         <div class="input-grid">
           <div class="input-group full">
             <label class="input-label" for="target-cal">Calorie (kcal)</label>
-            <input type="number" id="target-cal" class="input-field" placeholder="es. 600" min="100" max="3000" aria-describedby="cal-hint">
-            <span class="input-hint" id="cal-hint">Lascia vuoto → decide l'AI</span>
+            <input type="number" id="target-cal" class="input-field" placeholder="es. 600" min="100" max="3000">
           </div>
           <div class="input-group">
             <label class="input-label" for="target-prot">Proteine (g)</label>
@@ -87,10 +101,13 @@
             <label class="input-label" for="target-fat">Grassi (g)</label>
             <input type="number" id="target-fat" class="input-field" placeholder="es. 20" min="0">
           </div>
+          <div class="input-group full">
+            <span class="input-hint">Lascia vuoto → decide l'AI</span>
+          </div>
         </div>
       </section>
 
-      <!-- Tipo di cottura -->
+      <!-- ── Tipo di cottura ── -->
       <section class="p-section">
         <h2 class="p-section-title">🔥 Tipo di Cottura</h2>
         <div class="radio-group" role="radiogroup" aria-label="Metodo di cottura" id="cottura-group">
@@ -120,7 +137,7 @@
         </div>
       </section>
 
-      <!-- Tempo di preparazione -->
+      <!-- ── Tempo di preparazione ── -->
       <section class="p-section">
         <h2 class="p-section-title">⏱ Tempo di Preparazione</h2>
         <div class="radio-group" role="radiogroup" aria-label="Tempo massimo di preparazione" id="tempo-group">
@@ -146,7 +163,7 @@
         </div>
       </section>
 
-      <!-- Ingredienti -->
+      <!-- ── Ingredienti ── -->
       <section class="p-section">
         <h2 class="p-section-title">◉ Ingredienti Disponibili</h2>
         <div class="input-group">
@@ -156,7 +173,7 @@
         </div>
       </section>
 
-      <!-- Ispirazione culinaria -->
+      <!-- ── Ispirazione culinaria ── -->
       <section class="p-section">
         <h2 class="p-section-title">◎ Ispirazione Culinaria</h2>
         <div class="switch-group" id="cucina-switches" role="group" aria-label="Tipi di cucina">
@@ -192,6 +209,16 @@
         <div class="extra-input-wrap" id="cucina-custom-wrap">
           <input type="text" id="cucina-altra-text" class="input-field" placeholder="es. Peruviana, Turca…" aria-label="Specifica tipo di cucina">
         </div>
+      </section>
+
+      <!-- ── Modello AI ── -->
+      <section class="p-section">
+        <h2 class="p-section-title">🤖 Modello AI</h2>
+        <div class="model-segment" id="model-switcher" role="group" aria-label="Seleziona modello AI">
+          <button class="model-seg-btn active" data-model="gpt-4o-mini" aria-pressed="true">GPT-4o mini</button>
+          <button class="model-seg-btn" data-model="gpt-4.1-mini" aria-pressed="false">GPT-4.1 mini</button>
+        </div>
+        <p class="model-seg-hint" id="model-seg-hint">Standard · economico</p>
       </section>
 
       <button class="btn-generate" id="btn-generate">Genera Ricette ✦</button>
@@ -251,7 +278,6 @@
   <strong>La Cucina</strong> · Ricette generate da AI su misura per te
 </footer>
 
-<!-- Script — caricato dopo il DOM (defer implicito per posizione) -->
 <script src="main.js"></script>
 </body>
 </html>
