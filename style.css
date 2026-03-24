@@ -260,19 +260,10 @@ footer strong { color: var(--blue-light); }
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
   margin-bottom: 0;
 }
 
-.panel-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
+/* panel-title::after rimosso — niente barra dopo 'Parametri' */
 
 .btn-reset {
   padding: 4px 10px;
@@ -637,7 +628,20 @@ textarea.input-field {
    5. RESULTS AREA & STATES
 ════════════════════════════════════════ */
 
-.results-header  { display: flex; align-items: center; margin-bottom: 22px; }
+.results-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+/* La barra a destra cresce e riempie lo spazio — flex su results-header, non su results-title */
+.results-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
 .results-title {
   font-family: var(--font-display);
@@ -646,16 +650,7 @@ textarea.input-field {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.results-title::before {
-  content: '';
-  width: 50px;
-  height: 1px;
-  background: var(--border);
+  white-space: nowrap; /* evita che il testo vada a capo */
 }
 
 /* Empty state */
