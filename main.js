@@ -323,23 +323,28 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
   }
 
   /** Estrae e parsa l'array JSON di ricette dalla risposta testuale.
-   *  Gestisce markdown, testo prima/dopo il JSON, e JSON malformato. */
+   *  Strategia: trova il primo '[' e l'ultimo ']' nella risposta,
+   *  isola quel blocco e lo parsa. Robusto contro markdown e testo extra. */
   function parseRecipes(text) {
-    // 1. Rimuove i code block markdown (```json ... ``` o ``` ... ```)
-    let clean = text.replace(/```(?:json)?\s*([\s\S]*?)```/gi, '$1').trim();
+    // 1. Rimuove fence markdown (```json ... ``` oppure ``` ... ```)
+    let clean = text.replace(/```(?:json)?/gi, '').trim();
 
-    // 2. Cerca il primo [ ... ] che contenga almeno un oggetto {}
-    const match = clean.match(/\[[\s\S]*?\{[\s\S]*?\}[\s\S]*?\]/);
-    if (!match) {
-      console.error('JSON non trovato nella risposta:', clean);
-      throw new Error('Risposta non valida dal modello. Riprova.');
+    // 2. Trova il primo '[' e l'ultimo ']' — isola l'array JSON grezzo
+    const start = clean.indexOf('[');
+    const end   = clean.lastIndexOf(']');
+
+    if (start === -1 || end === -1 || end <= start) {
+      console.error('[parseRecipes] Array JSON non trovato. Risposta ricevuta:', clean);
+      throw new Error('Risposta ricevuta dal modello (niente JSON):\n\n' + clean.slice(0, 300));
     }
 
+    const jsonStr = clean.slice(start, end + 1);
+
     try {
-      return JSON.parse(match[0]);
+      return JSON.parse(jsonStr);
     } catch (e) {
-      console.error('JSON non parsabile:', match[0], e);
-      throw new Error('Risposta non valida dal modello. Riprova.');
+      console.error('[parseRecipes] JSON non parsabile:', jsonStr, '\nErrore:', e.message);
+      throw new Error('JSON non valido — inizio risposta:\n\n' + clean.slice(0, 300) + '\n\nErrore: ' + e.message);
     }
   }
 
@@ -875,6 +880,7 @@ Rispondi SOLO con un JSON array con un elemento, stesso formato, senza markdown:
       }
 
     } catch (err) {
+      console.error('[generate] Errore:', err);
       const errHTML = `<div class="error-box" role="alert">⚠️ ${err.message}</div>`;
       if (!isMore) {
         container.innerHTML = errHTML;
