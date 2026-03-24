@@ -2,8 +2,30 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="icon.ico" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- ── PWA core ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1D4E6F">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- ── iOS / Safari PWA ── -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="La Cucina">
+  <link rel="apple-touch-icon" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+
+  <!-- ── Meta descrittivi ── -->
+  <meta name="description" content="Genera ricette personalizzate con l'intelligenza artificiale, su misura per i tuoi ingredienti e obiettivi nutrizionali.">
+  <meta name="application-name" content="La Cucina">
+
+  <!-- ── Favicons ── -->
+  <link rel="icon" href="icon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+
   <title>La Cucina — Ricette su Misura</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -290,5 +312,16 @@
 </footer>
 
 <script src="main.js"></script>
+
+<!-- ── Registrazione Service Worker (PWA) ── -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('[SW] Registrato:', reg.scope))
+        .catch(err => console.warn('[SW] Errore registrazione:', err));
+    });
+  }
+</script>
 </body>
 </html>
