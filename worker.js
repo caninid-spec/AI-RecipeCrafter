@@ -1,91 +1,86 @@
 /**
- * worker.js — Cloudflare Worker · La Cucina AI Proxy → OpenAI
- *
- * Fa da intermediario sicuro tra il frontend (GitHub Pages) e l'API OpenAI.
- * La chiave API non viene mai esposta al browser.
- *
- * ─── ISTRUZIONI DI DEPLOY ────────────────────────────────────────────────
- *
- *  1. Vai su https://workers.cloudflare.com → crea account gratuito
- *
- *  2. Clicca "Create application" → "Create Worker"
- *     Dai un nome, es. "cucina-ai-proxy" → clicca "Deploy"
- *
- *  3. Clicca "Edit code" → cancella tutto → incolla questo file → "Deploy"
- *
- *  4. Vai su Settings → Variables and Secrets → "Add variable"
- *     → Nome:   OPENAI_API_KEY
- *     → Valore: sk-... (la tua chiave da https://platform.openai.com/api-keys)
- *     → Tipo:   Secret → "Save"
- *
- *  5. Copia l'URL del Worker:
- *       https://cucina-ai-proxy.<tuo-username>.workers.dev
- *
- *  6. In main.js sostituisci la riga PROXY_URL con il tuo URL + /api/chat:
- *       const PROXY_URL = 'https://cucina-ai-proxy.mario.workers.dev/api/chat';
- *
- *  7. Commit + push su GitHub → l'app è online e funziona su mobile. ✓
- *
- * ─────────────────────────────────────────────────────────────────────────
+ * worker.js — Cloudflare Worker con supporto D1 Database
  */
 
 export default {
   async fetch(request, env) {
-
-    /* ── CORS preflight ── */
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
-    /* ── Accetta solo POST /api/chat ── */
     const url = new URL(request.url);
-    if (request.method !== 'POST' || url.pathname !== '/api/chat') {
-      return json({ error: 'Not found' }, 404);
+
+    // --- ROTTA AI: Generazione e Modifica ---
+    if (request.method === 'POST' && url.pathname === '/api/chat') {
+      if (!env.OPENAI_API_KEY) return json({ error: 'Chiave API mancante.' }, 500);
+
+      const body = await request.json();
+      const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4.1-mini'];
+      const selectedModel = ALLOWED_MODELS.includes(body.model) ? body.model : 'gpt-4o-mini';
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          max_tokens: 4000,
+          temperature: 0.7,
+          messages: body.messages,
+        }),
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      });
     }
 
-    /* ── Verifica chiave API ── */
-    if (!env.OPENAI_API_KEY) {
-      return json({
-        error: { message: 'OPENAI_API_KEY non configurata. Vai su Settings → Variables and Secrets nel Worker.' }
-      }, 500);
+    // --- ROTTA DB: Recupera Ricette ---
+    if (request.method === 'GET' && url.pathname === '/api/recipes') {
+      try {
+        const { results } = await env.DB.prepare(
+          "SELECT json_data FROM ricette_salvate ORDER BY data_salvataggio DESC"
+        ).all();
+        const recipes = results.map(row => JSON.parse(row.json_data));
+        return json(recipes);
+      } catch (e) {
+        return json({ error: e.message }, 500);
+      }
     }
 
-    /* ── Legge il body ── */
-    let body;
-    try { body = await request.json(); }
-    catch { return json({ error: { message: 'Body JSON non valido.' } }, 400); }
-
-    const { messages, model } = body;
-
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return json({ error: { message: 'Campo "messages" mancante o vuoto.' } }, 400);
+    // --- ROTTA DB: Salva Ricetta ---
+    if (request.method === 'POST' && url.pathname === '/api/recipes') {
+      try {
+        const recipe = await request.json();
+        const id = recipe.nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        
+        await env.DB.prepare(
+          "INSERT OR REPLACE INTO ricette_salvate (id, nome, cucina, json_data) VALUES (?, ?, ?, ?)"
+        ).bind(id, recipe.nome, recipe.cucina, JSON.stringify(recipe)).run();
+        
+        return json({ success: true });
+      } catch (e) {
+        return json({ error: e.message }, 500);
+      }
     }
 
-    /* ── Modelli permessi (whitelist di sicurezza) ── */
-    const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4.1-mini'];
-    const selectedModel  = ALLOWED_MODELS.includes(model) ? model : 'gpt-4o-mini';
+    // --- ROTTA DB: Rimuovi Ricetta ---
+    if (request.method === 'DELETE' && url.pathname === '/api/recipes') {
+      try {
+        const { nome } = await request.json();
+        const id = nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        await env.DB.prepare("DELETE FROM ricette_salvate WHERE id = ?").bind(id).run();
+        return json({ success: true });
+      } catch (e) {
+        return json({ error: e.message }, 500);
+      }
+    }
 
-    /* ── Chiama OpenAI ── */
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model:       selectedModel,
-        max_tokens:  4000,
-        temperature: 0.7,
-        messages,
-      }),
-    });
-
-    const data = await openaiResponse.json();
-
-    return new Response(JSON.stringify(data), {
-      status:  openaiResponse.status,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-    });
+    return json({ error: 'Not found' }, 404);
   },
 };
 
@@ -98,8 +93,8 @@ function json(data, status = 200) {
 
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
