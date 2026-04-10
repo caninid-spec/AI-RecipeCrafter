@@ -19,7 +19,9 @@ export default {
         
         const systemPrompt = {
           role: "system",
-          content: `Sei uno Chef AI professionista. Rispondi SOLO in formato JSON (Array di oggetti). Ogni oggetto deve avere: nome (string), descrizione (string), cucina (string), valori_per_porzione (object con calorie, proteine, carboidrati, grassi come numeri), ingredienti (array di oggetti con nome e qty), passaggi (array di stringhe).`
+          content: `Sei Chef AI. Rispondi SOLO JSON array, niente markdown/testo.
+Schema: [{"nome":"str","descrizione":"str","cucina":"str","taste":"str","valori_per_porzione":{"calorie":num,"proteine":num,"carboidrati":num,"grassi":num},"ingredienti":[{"nome":"str","qty":"str"}],"passaggi":["str"]}]
+Vincoli: Rispetta sempre target nutrizionali ±10%, ingredienti richiesti, tempo/cottura, esclusioni. JSON valido.`
         };
 
         const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {

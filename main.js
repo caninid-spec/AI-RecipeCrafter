@@ -127,13 +127,41 @@
       const tempoFinal = state.tempo === '__altro__' ? _val('tempo-altro-text') : state.tempo;
       const restrizioni = _val('restrizioni');
 
-      const prompt = `Agisci come Chef Professionista. Crea 3 ricette ${state.taste} di tipo ${state.mode}.
-Ingredienti base: ${_val('ingredienti')}.
-Cucine preferite: ${cucineFinal.length > 0 ? cucineFinal.join(', ') : 'Internazionale'}.
-Metodo cottura: ${cottureFinal}, Tempo: ${tempoFinal}.
-Target nutrizionale: ${_val('target-cal')}kcal, ${_val('target-prot')}g proteine, ${_val('target-carb')}g carboidrati, ${_val('target-fat')}g grassi.
-${restrizioni ? `Restrizioni: ${restrizioni}` : ''}
-RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve avere: nome, descrizione, cucina, valori_per_porzione (calorie, proteine, carboidrati, grassi), ingredienti (array con nome e qty), passaggi (array di stringhe).`;
+      // Nutrizionali con defaults intelligenti
+      const calTarget = parseInt(_val('target-cal')) || 600;
+      const protTarget = parseInt(_val('target-prot')) || null;
+      const carbTarget = parseInt(_val('target-carb')) || null;
+      const fatTarget = parseInt(_val('target-fat')) || null;
+
+      // Build istruzioni nutrizionali
+      let nutritionInstructions = `${calTarget} kcal`;
+      if (protTarget) nutritionInstructions += `, ${protTarget}g prot`;
+      if (carbTarget) nutritionInstructions += `, ${carbTarget}g carb`;
+      if (fatTarget) nutritionInstructions += `, ${fatTarget}g fat`;
+      nutritionInstructions += ` (tolleranza ±10%)`;
+
+      const ingredients = _val('ingredienti') || 'libera scelta';
+      const cuisines = cucineFinal.length > 0 ? cucineFinal.join(', ') : 'Varia';
+      const restrictions = restrizioni ? `[ESCLUSIONI: ${restrizioni}]` : '';
+
+      const prompt = `Crea 3 ricette SOLO JSON. ${state.taste}, tipo ${state.mode}.
+Ingredienti: ${ingredients}
+Cucine: ${cuisines}
+Cottura: ${cottureFinal} | Tempo: ${tempoFinal}
+Nutrizionali: ${nutritionInstructions}
+${restrictions}
+
+SCHEMA RIGIDO - ogni ricetta:
+{"nome":"","descrizione":"","cucina":"","valori_per_porzione":{"calorie":NUM,"proteine":NUM,"carboidrati":NUM,"grassi":NUM},"ingredienti":[{"nome":"","qty":""}],"passaggi":[""],"taste":"${state.taste}"}
+
+VINCOLI:
+- Calorie entro ±10% target
+- Se target proteine/carb/fat: rispetta ±10%
+- Ingredienti: include ${ingredients === 'libera scelta' ? 'almeno uno' : 'tutti'} gli ingredienti base
+- Tempo rispetta "${tempoFinal}"
+- Cucinatura: "${cottureFinal}"
+${restrictions ? `- NIENTE: ${restrizioni}` : ''}
+- Array JSON valido, niente markdown`;
 
       const res = await fetch(PROXY_URL, {
         method: 'POST',
@@ -148,12 +176,26 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
 
       const data = await res.json();
       const content = data.choices[0].message.content.replace(/```json|```/gi, '').trim();
-      state.recipes = JSON.parse(content);
       
+      // Validazione schema risposta
+      let recipes = [];
+      try {
+        const parsed = JSON.parse(content);
+        recipes = Array.isArray(parsed) ? parsed : [parsed];
+        
+        // Validazione minima
+        recipes = recipes.filter(r => r.nome && r.valori_per_porzione && r.ingredienti && r.passaggi);
+        
+        if (recipes.length === 0) throw new Error('Nessuna ricetta valida');
+      } catch (parseErr) {
+        throw new Error(`Risposta AI non valida: ${parseErr.message}`);
+      }
+      
+      state.recipes = recipes;
       container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
     } catch (e) {
       console.error('Errore generazione:', e);
-      container.innerHTML = `<p class="error">❌ Errore nella generazione. Verifica la connessione e riprova.</p>`;
+      container.innerHTML = `<p class="error">❌ ${e.message || 'Errore nella generazione. Riprova.'}</p>`;
     } finally {
       btn.disabled = false;
       btn.innerHTML = "Genera Ricette ✦";
