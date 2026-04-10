@@ -1216,6 +1216,22 @@ textarea.input-field {
   margin-left: 46px;
 }
 
+/* Sezione ricette divisa per taste */
+.saved-section {
+  margin-bottom: 36px;
+}
+
+.saved-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Barra di ricerca */
 .search-bar-wrap { display: flex; align-items: center; position: relative; }
 

@@ -54,7 +54,29 @@
       return;
     }
 
-    container.innerHTML = `<div class="cards-grid">${state.filteredSaved.map((r, i) => renderCard(r, i, true)).join('')}</div>`;
+    // Dividi per taste
+    const salate = state.filteredSaved.filter(r => r.taste === 'salato' || !r.taste);
+    const dolci = state.filteredSaved.filter(r => r.taste === 'dolce');
+
+    let html = '';
+
+    if (salate.length > 0) {
+      html += `
+        <section class="saved-section">
+          <h3 class="saved-section-title">🧂 Ricette Salate</h3>
+          <div class="cards-grid">${salate.map((r, i) => renderCard(r, i, true)).join('')}</div>
+        </section>`;
+    }
+
+    if (dolci.length > 0) {
+      html += `
+        <section class="saved-section">
+          <h3 class="saved-section-title">🍰 Ricette Dolci</h3>
+          <div class="cards-grid">${dolci.map((r, i) => renderCard(r, i, true)).join('')}</div>
+        </section>`;
+    }
+
+    container.innerHTML = html;
   }
 
   function _showCustomInput(groupId) {
@@ -178,6 +200,9 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     const btn = e.target;
     const recipe = JSON.parse(decodeURIComponent(btn.dataset.recipe));
     
+    // Aggiungi taste alla ricetta
+    recipe.taste = state.taste;
+    
     btn.disabled = true;
     const originalText = btn.innerHTML;
     btn.innerHTML = '⏳ Salvataggio...';
@@ -226,7 +251,10 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
         body: JSON.stringify({ nome: recipeName })
       });
 
-      if (!res.ok) throw new Error(`DB error: ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(`DB error: ${res.status} - ${errData.error || 'Unknown'}`);
+      }
       
       btn.innerHTML = '✓';
       await loadSavedFromDB();
