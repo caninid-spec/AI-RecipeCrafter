@@ -436,6 +436,27 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
       });
     });
 
+    // ── Logo click: torna a home e reset ──
+    const logo = document.querySelector('.logo');
+    if (logo) {
+      logo.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Torna a tab "Genera"
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-generate').classList.add('active');
+        document.querySelectorAll('.nav-tab').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.getElementById('tab-generate').classList.add('active');
+        document.getElementById('tab-generate').setAttribute('aria-selected', 'true');
+        // Reset form
+        resetForm();
+        // Scroll top
+        window.scrollTo(0, 0);
+      });
+    }
+
     // ── Buttons ──
     document.getElementById('btn-generate').addEventListener('click', generate);
     document.getElementById('btn-reset').addEventListener('click', resetForm);
