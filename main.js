@@ -227,13 +227,21 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     document.getElementById('tempo-altro-text').value = '';
 
     // Reset taste
-    document.querySelectorAll('.taste-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.taste-tab').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     document.querySelector('[data-taste="salato"]').classList.add('active');
+    document.querySelector('[data-taste="salato"]').setAttribute('aria-pressed', 'true');
     state.taste = 'salato';
 
     // Reset mode
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     document.querySelector('[data-mode="gustosa"]').classList.add('active');
+    document.querySelector('[data-mode="gustosa"]').setAttribute('aria-pressed', 'true');
     state.mode = 'gustosa';
 
     // Reset switches (cucine)
@@ -256,9 +264,17 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     _hideCustomInput('tempo');
 
     // Reset model
-    document.querySelectorAll('.model-seg-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.model-seg-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     document.querySelector('[data-model="gpt-4o-mini"]').classList.add('active');
+    document.querySelector('[data-model="gpt-4o-mini"]').setAttribute('aria-pressed', 'true');
     state.aiModel = 'gpt-4o-mini';
+    
+    // Reset hint
+    const hint = document.getElementById('model-seg-hint');
+    if (hint) hint.textContent = 'Standard · economico';
   }
 
   function init() {
@@ -267,8 +283,12 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     // ── Taste Tabs ──
     document.querySelectorAll('.taste-tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.taste-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.taste-tab').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
         state.taste = btn.dataset.taste;
       });
     });
@@ -276,8 +296,12 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     // ── Mode Buttons ──
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.mode-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
         state.mode = btn.dataset.mode;
       });
     });
@@ -306,9 +330,23 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     // ── Model Switcher ──
     document.querySelectorAll('.model-seg-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.model-seg-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.model-seg-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
         state.aiModel = btn.dataset.model;
+        
+        // Aggiorna hint
+        const hint = document.getElementById('model-seg-hint');
+        if (hint) {
+          if (state.aiModel === 'gpt-4o-mini') {
+            hint.textContent = 'Standard · economico';
+          } else if (state.aiModel === 'gpt-4.1-mini') {
+            hint.textContent = 'Avanzato';
+          }
+        }
       });
     });
 
