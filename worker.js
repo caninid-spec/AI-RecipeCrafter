@@ -131,6 +131,42 @@ export default {
       }
     }
 
+    // ── DELETE /api/recipes: elimina dal DB ──
+    if (url.pathname === '/api/recipes' && request.method === 'DELETE') {
+      try {
+        const { nome } = await request.json();
+
+        if (!nome) {
+          return new Response(
+            JSON.stringify({ error: 'Nome ricetta mancante' }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        if (!env.DB) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'DB non disponibile' }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        const id = nome.replace(/\s+/g, '_').toLowerCase();
+        
+        await env.DB.prepare("DELETE FROM ricette_salvate WHERE id = ?").bind(id).run();
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (err) {
+        console.error('DB delete error:', err);
+        return new Response(
+          JSON.stringify({ error: 'Errore eliminazione ricetta' }),
+          { status: 500, headers: corsHeaders }
+        );
+      }
+    }
+
     return new Response('Not Found', { status: 404 });
   }
 };

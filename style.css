@@ -1132,6 +1132,51 @@ textarea.input-field {
 
 .btn-unsave:hover { background: rgba(200, 60, 60, 0.08); }
 
+/* Delete button (X) per ricette salvate */
+.btn-delete-recipe {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(200, 60, 60, 0.85);
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.btn-delete-recipe:hover {
+  background: #C83C3C;
+  transform: scale(1.1);
+}
+
+.btn-delete-recipe:active {
+  transform: scale(0.95);
+}
+
+.btn-delete-recipe:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-delete-recipe:focus-visible {
+  outline: 2px solid #C83C3C;
+  outline-offset: 2px;
+}
+
+/* Renderizza card come position: relative per il positioning assoluto del delete */
+.recipe-card {
+  position: relative;
+}
+
 
 /* ════════════════════════════════════════
    7. SAVED VIEW & SEARCH

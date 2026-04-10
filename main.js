@@ -147,6 +147,7 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
 
     return `
       <article class="recipe-card">
+        ${isSaved ? `<button class="btn-delete-recipe" data-recipe-name="${recipe.nome}" aria-label="Elimina ricetta" title="Elimina ricetta">✕</button>` : ''}
         <div class="card-header">
           <span class="card-cuisine">${recipe.cucina || 'Variata'}</span>
           <h3 class="card-title">${recipe.nome}</h3>
@@ -166,7 +167,7 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
           </div>
         ` : ''}
         <div class="card-actions">
-          <button class="btn-save" data-recipe="${encodeURIComponent(JSON.stringify(recipe))}" aria-label="Salva ricetta">🔖 Salva</button>
+          ${!isSaved ? `<button class="btn-save" data-recipe="${encodeURIComponent(JSON.stringify(recipe))}" aria-label="Salva ricetta">🔖 Salva</button>` : ''}
         </div>
       </article>`;
   }
@@ -200,6 +201,43 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
     } catch (err) {
       console.error('Errore salvataggio:', err);
       btn.innerHTML = '❌ Errore';
+      btn.disabled = false;
+      setTimeout(() => btn.innerHTML = originalText, 3000);
+    }
+  }
+
+  async function deleteRecipe(e) {
+    if (!e.target.classList.contains('btn-delete-recipe')) return;
+    
+    const btn = e.target;
+    const recipeName = btn.dataset.recipeName;
+    
+    // Conferma
+    if (!confirm(`Elimina "${recipeName}"?`)) return;
+    
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳';
+
+    try {
+      const res = await fetch(DB_URL, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: recipeName })
+      });
+
+      if (!res.ok) throw new Error(`DB error: ${res.status}`);
+      
+      btn.innerHTML = '✓';
+      await loadSavedFromDB();
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }, 1500);
+    } catch (err) {
+      console.error('Errore eliminazione:', err);
+      btn.innerHTML = '❌';
       btn.disabled = false;
       setTimeout(() => btn.innerHTML = originalText, 3000);
     }
@@ -376,6 +414,9 @@ RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI). Ogni oggetto deve av
 
     // ── Save Recipe (event delegation) ──
     document.addEventListener('click', saveRecipe);
+
+    // ── Delete Recipe (event delegation) ──
+    document.addEventListener('click', deleteRecipe);
 
     // ── Search Salvate ──
     const searchInput = document.getElementById('search-input');
