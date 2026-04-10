@@ -7,24 +7,14 @@
   const state = {
     mode: 'gustosa',
     taste: 'salato',
-    aiModel: 'gpt-4o-mini',
     cottura: 'qualsiasi',
     tempo: 'qualsiasi',
+    aiModel: 'gpt-4o-mini',
     recipes: [],
     saved: []
   };
 
-  /* --- HELPERS --- */
   function _val(id) { return document.getElementById(id)?.value?.trim() || ''; }
-  function _makeId(nome) { return nome.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase(); }
-
-  function _updateSavedCountUI() {
-    const n = state.saved.length;
-    const badge = document.getElementById('saved-badge');
-    const label = document.getElementById('saved-count-label');
-    if (badge) badge.textContent = n > 0 ? `(${n})` : '';
-    if (label) label.textContent = n + ' ricett' + (n === 1 ? 'a' : 'e');
-  }
 
   async function loadSavedFromStorage() {
     try {
@@ -33,122 +23,120 @@
         state.saved = await response.json();
         _updateSavedCountUI();
       }
-    } catch (err) { console.error("Errore DB:", err); }
+    } catch (err) { console.error("Errore sincronizzazione DB:", err); }
   }
 
-  /* --- API CALL --- */
-  async function callAPI(messages) {
-    const response = await fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, model: state.aiModel }),
-    });
-    if (!response.ok) throw new Error('Errore API');
-    const data = await response.json();
-    let content = data.choices?.[0]?.message?.content || '';
-    return { text: content.replace(/```json|```/gi, '').trim() };
+  function _updateSavedCountUI() {
+    const badge = document.getElementById('saved-badge');
+    const label = document.getElementById('saved-count-label');
+    if (badge) badge.textContent = state.saved.length > 0 ? `(${state.saved.length})` : '';
+    if (label) label.textContent = `${state.saved.length} ricette salvate`;
   }
 
-  /* --- RENDERING --- */
-  function renderCard(recipe, index, isSavedView) {
-    const id = _makeId(recipe.nome) + '_' + index;
-    const v = recipe.valori_per_porzione || { calorie:0, proteine:0, carboidrati:0, grassi:0 };
-    const alreadySaved = state.saved.some(r => r.nome === recipe.nome);
+  async function generate() {
+    const btn = document.getElementById('btn-generate');
+    const container = document.getElementById('results-container');
+    btn.disabled = true;
+    btn.innerHTML = "Sto cucinando... ⏳";
 
+    const cucine = Array.from(document.querySelectorAll('.switch-row.active')).map(r => r.dataset.cucina);
+    
+    const prompt = `Agisci come Chef Professionista. Crea 3 ricette ${state.taste} di tipo ${state.mode}.
+      Ingredienti base: ${_val('ingredienti')}.
+      Cucine preferite: ${cucine.join(', ') || 'Internazionale'}.
+      Metodo cottura: ${state.cottura}, Tempo: ${state.tempo}.
+      Target nutrizionale: ${_val('target-cal')}kcal, ${_val('target-prot')}g proteine, ${_val('target-carb')}g carboidrati, ${_val('target-fat')}g grassi.
+      RISPONDI ESCLUSIVAMENTE IN FORMATO JSON (ARRAY DI OGGETTI).`;
+
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: prompt }],
+          model: state.aiModel
+        })
+      });
+
+      const data = await res.json();
+      const content = data.choices[0].message.content.replace(/```json|```/gi, '').trim();
+      state.recipes = JSON.parse(content);
+      
+      container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
+    } catch (e) {
+      container.innerHTML = `<p class="error">Errore nella generazione. Verifica la connessione al database.</p>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "Genera Ricette ✦";
+    }
+  }
+
+  function renderCard(recipe, index, isSaved) {
+    const v = recipe.valori_per_porzione || { calorie: 0, proteine: 0, carboidrati: 0, grassi: 0 };
     return `
-      <article class="recipe-card" data-nome="${recipe.nome}">
+      <article class="recipe-card">
         <div class="card-header">
-          <div class="card-meta"><span class="card-cuisine">${recipe.cucina || 'Variata'}</span></div>
+          <span class="card-cuisine">${recipe.cucina || 'Variata'}</span>
           <h3 class="card-title">${recipe.nome}</h3>
-          <p class="card-desc">${recipe.descrizione}</p>
         </div>
         <div class="card-macros">
-          <div class="macro-item"><span class="macro-val">${v.calorie}</span><span class="macro-lbl">kcal</span></div>
-          <div class="macro-item"><span class="macro-val">${v.proteine}g</span><span class="macro-lbl">Prot</span></div>
-          <div class="macro-item"><span class="macro-val">${v.carboidrati}g</span><span class="macro-lbl">Carb</span></div>
-          <div class="macro-item"><span class="macro-val">${v.grassi}g</span><span class="macro-lbl">Fat</span></div>
-        </div>
-        <button class="btn-body-toggle" data-action="toggle-body">Dettagli ricetta ▾</button>
-        <div class="card-body" hidden>
-          <h4>Ingredienti</h4>
-          <ul class="ingredient-list">${recipe.ingredienti.map(i => `<li>${i.qty || ''} ${i.nome}</li>`).join('')}</ul>
-          <h4>Preparazione</h4>
-          <ol class="steps-list">${recipe.passaggi.map(p => `<li>${p}</li>`).join('')}</ol>
+          <div class="macro-item"><strong>${v.calorie}</strong><span>kcal</span></div>
+          <div class="macro-item"><strong>${v.proteine}g</strong><span>Prot</span></div>
+          <div class="macro-item"><strong>${v.carboidrati}g</strong><span>Carb</span></div>
+          <div class="macro-item"><strong>${v.grassi}g</strong><span>Fat</span></div>
         </div>
         <div class="card-actions">
-          <button class="btn-save ${alreadySaved ? 'saved' : ''}" data-action="${isSavedView ? 'unsave' : 'save'}">
-            ${isSavedView ? '🗑 Rimuovi' : (alreadySaved ? '✓ Salvata' : '🔖 Salva')}
-          </button>
+          <button class="btn-save" onclick="saveRecipe('${encodeURIComponent(JSON.stringify(recipe))}')">🔖 Salva</button>
         </div>
       </article>`;
   }
 
-  async function generate() {
-    const container = document.getElementById('results-container');
-    const btn = document.getElementById('btn-generate');
-    btn.disabled = true;
-    btn.textContent = "Cucinando...";
-    
-    container.innerHTML = `<div class="loader-wrap"><p>L'AI sta creando le tue ricette...</p></div>`;
+  window.saveRecipe = async (encodedData) => {
+    const recipe = JSON.parse(decodeURIComponent(encodedData));
+    await fetch(DB_URL, { method: 'POST', body: JSON.stringify(recipe) });
+    loadSavedFromStorage();
+  };
 
-    const cucine = [...document.querySelectorAll('#cucina-switches .switch-row.active')].map(r => r.dataset.cucina);
-    const prompt = `Agisci come Chef. Crea 3 ricette ${state.taste} (stile ${state.mode}). 
-      Ingredienti: ${_val('ingredienti')}. 
-      Cottura: ${state.cottura}. Tempo: ${state.tempo}.
-      Cucine preferite: ${cucine.join(', ')}.
-      Target: ${_val('target-cal')}kcal, ${_val('target-prot')}g prot, ${_val('target-carb')}g carb, ${_val('target-fat')}g grassi.
-      RISPONDI SOLO CON UN ARRAY JSON DI OGGETTI.`;
-
-    try {
-      const { text } = await callAPI([{ role: 'user', content: prompt }]);
-      state.recipes = JSON.parse(text);
-      container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
-    } catch (e) {
-      container.innerHTML = `<p class="error">Errore: Assicurati che il Worker sia configurato correttamente.</p>`;
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Genera Ricette ✦";
-    }
-  }
-
-  /* --- INITIALIZATION & EVENTS --- */
   function init() {
     loadSavedFromStorage();
 
-    // Pulsanti Taste (Salato/Dolce)
+    // Switch Cucine
+    document.querySelectorAll('.switch-row').forEach(row => {
+      row.onclick = () => row.classList.toggle('active');
+    });
+
+    // Taste Tabs
     document.querySelectorAll('.taste-tab').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.taste-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+        document.querySelectorAll('.taste-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
         state.taste = btn.dataset.taste;
       };
     });
 
-    // Pulsanti Mode (Gustosa/Fit/Leggera)
+    // Mode Buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.onclick = () => {
-        document.querySelectorAll('.mode-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
         state.mode = btn.dataset.mode;
       };
     });
 
-    // Selettori Radio (Cottura e Tempo)
-    const setupRadio = (groupId, stateKey) => {
+    // Radio Rows (Cottura e Tempo)
+    const setupRadio = (groupId, key) => {
       document.querySelectorAll(`#${groupId} .radio-row`).forEach(row => {
         row.onclick = () => {
           document.querySelectorAll(`#${groupId} .radio-row`).forEach(r => r.classList.remove('active'));
           row.classList.add('active');
-          state[stateKey] = row.dataset[stateKey];
+          state[key] = row.dataset[key];
         };
       });
     };
     setupRadio('cottura-group', 'cottura');
     setupRadio('tempo-group', 'tempo');
 
-    // Navigazione Tab
+    // Navigazione
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.onclick = () => {
         const target = tab.getAttribute('aria-controls').replace('view-', '');
@@ -156,36 +144,10 @@
         document.getElementById('view-' + target).classList.add('active');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        if(target === 'saved') renderSaved();
       };
     });
 
-    // Click Genera
-    document.getElementById('btn-generate').onclick = () => generate();
-
-    // Delegazione per pulsanti dentro le card
-    document.addEventListener('click', async (e) => {
-      const target = e.target;
-      if (target.dataset.action === 'toggle-body') {
-        const body = target.closest('.recipe-card').querySelector('.card-body');
-        body.hidden = !body.hidden;
-      }
-      if (target.dataset.action === 'save') {
-        const card = target.closest('.recipe-card');
-        const recipe = state.recipes.find(r => r.nome === card.dataset.nome);
-        const res = await fetch(DB_URL, { method: 'POST', body: JSON.stringify(recipe) });
-        if(res.ok) { target.classList.add('saved'); target.textContent = '✓ Salvata'; loadSavedFromStorage(); }
-      }
-    });
-  }
-
-  function renderSaved() {
-    const container = document.getElementById('saved-container');
-    if (state.saved.length === 0) {
-      container.innerHTML = '<p class="empty-state">Nessuna ricetta salvata.</p>';
-      return;
-    }
-    container.innerHTML = `<div class="cards-grid">${state.saved.map((r, i) => renderCard(r, i, true)).join('')}</div>`;
+    document.getElementById('btn-generate').onclick = generate;
   }
 
   init();
