@@ -807,7 +807,13 @@ textarea.input-field {
   margin-bottom: 5px;
 }
 
-.card-name {
+/* Card header (contiene cucina, titolo, descrizione) */
+.card-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.card-title {
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: 700;
@@ -821,6 +827,52 @@ textarea.input-field {
   color: var(--muted);
   line-height: 1.5;
   font-weight: 300;
+}
+
+/* Ingredienti e procedimento come blocchi in-card */
+.card-ingredienti {
+  padding: 12px 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+}
+
+.card-ingredienti strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.card-passaggi {
+  padding: 12px 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.9rem;
+}
+
+.card-passaggi strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.card-passaggi ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.card-passaggi li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+  color: var(--text2);
 }
 
 .card-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }

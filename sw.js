@@ -16,7 +16,6 @@ const STATIC_ASSETS = [
   './manifest.json',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
-  // Font Google (vengono serviti dalla rete, ma si cachano alla prima visita)
 ];
 
 // ── Install: pre-cache gli asset core ──
@@ -26,7 +25,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  // Attiva subito senza aspettare la chiusura delle vecchie tab
   self.skipWaiting();
 });
 
@@ -41,7 +39,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Prende controllo di tutte le tab aperte immediatamente
   self.clients.claim();
 });
 
@@ -49,10 +46,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // API calls (OpenAI, ecc.) → solo Network, mai cache
+  // API calls (OpenAI, Anthropic, Google, ecc.) → solo Network, mai cache
   if (
     url.hostname.includes('openai.com') ||
-    url.hostname.includes('googleapis.com') && url.pathname.includes('/ai/') ||
+    url.hostname.includes('anthropic.com') ||
+    url.hostname.includes('workers.dev') ||
+    (url.hostname.includes('googleapis.com') && url.pathname.includes('/v1/')) ||
     event.request.method !== 'GET'
   ) {
     return; // lascia passare senza intercettare
@@ -64,10 +63,17 @@ self.addEventListener('fetch', (event) => {
       caches.open(CACHE_NAME).then((cache) => {
         return fetch(event.request)
           .then((response) => {
-            cache.put(event.request, response.clone());
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
+            }
             return response;
           })
-          .catch(() => caches.match(event.request));
+          .catch(() => caches.match(event.request))
+          .catch(() => {
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
+          });
       })
     );
     return;
@@ -78,21 +84,21 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
 
-      return fetch(event.request).then((response) => {
-        // Cacha solo risposte valide
-        if (response && response.status === 200 && response.type !== 'opaque') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
-      }).catch(() => {
-        // Offline fallback: restituisce la shell dell'app
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
+      return fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type !== 'opaque') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
     })
   );
 });
