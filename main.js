@@ -57,10 +57,18 @@
 
     let html = '';
     if (salate.length > 0) {
-      html += `<section class="saved-section"><h3 class="saved-section-title">🧂 Ricette Salate</h3><div class="cards-grid">${salate.map((r, i) => renderCard(r, i, true)).join('')}</div></section>`;
+      html += `
+        <section class="saved-section">
+          <h3 class="saved-section-title">🧂 Ricette Salate</h3>
+          <div class="cards-grid">${salate.map((r, i) => renderCard(r, i, true)).join('')}</div>
+        </section>`;
     }
     if (dolci.length > 0) {
-      html += `<section class="saved-section"><h3 class="saved-section-title">🍰 Ricette Dolci</h3><div class="cards-grid">${dolci.map((r, i) => renderCard(r, i, true)).join('')}</div></section>`;
+      html += `
+        <section class="saved-section">
+          <h3 class="saved-section-title">🍰 Ricette Dolci</h3>
+          <div class="cards-grid">${dolci.map((r, i) => renderCard(r, i, true)).join('')}</div>
+        </section>`;
     }
     container.innerHTML = html;
   }
@@ -99,7 +107,7 @@
 
     try {
       const cucine = Array.from(document.querySelectorAll('.switch-row.active')).map(r => r.dataset.cucina);
-      const cucineFinal = cucine.includes('__altra__')
+      const cucineFinal = cucine.includes('__altra__') 
         ? [...cucine.filter(c => c !== '__altra__'), _val('cucina-altra-text')].filter(Boolean)
         : cucine;
 
@@ -122,14 +130,13 @@
       const cuisines = cucineFinal.length > 0 ? cucineFinal.join(', ') : 'Varia';
       const restrictions = restrizioni ? `[ESCLUSIONI: ${restrizioni}]` : '';
 
-      // ✅ Prompt pulito, senza spazi nelle chiavi JSON
       const prompt = `Crea 3 ricette SOLO JSON. ${state.taste}, tipo ${state.mode}.
 Ingredienti: ${ingredients}
 Cucine: ${cuisines}
 Cottura: ${cottureFinal} | Tempo: ${tempoFinal}
 Nutrizionali: ${nutritionInstructions}
 ${restrictions}
-SCHEMA RIGIDO - ogni ricetta deve avere ESATTAMENTE queste chiavi (SENZA spazi):
+SCHEMA RIGIDO - ogni ricetta:
 [{"nome":"string","descrizione":"string","cucina":"string","taste":"${state.taste}","valori_per_porzione":{"calorie":0,"proteine":0,"carboidrati":0,"grassi":0},"ingredienti":[{"nome":"string","qty":"string"}],"passaggi":["string"]}]
 VINCOLI:
 - Calorie entro ±10% target
@@ -151,18 +158,6 @@ VINCOLI:
       try {
         const parsed = JSON.parse(content);
         recipes = Array.isArray(parsed) ? parsed : [parsed];
-
-        // Normalizzazione chiavi (gestisce eventuali spazi residui dall'AI)
-        recipes = recipes.map(r => ({
-          nome: r.nome || r["nome "],
-          descrizione: r.descrizione || r["descrizione "],
-          cucina: r.cucina || r["cucina "],
-          taste: r.taste || r["taste "],
-          valori_per_porzione: r.valori_per_porzione || r["valori_per_porzione "],
-          ingredienti: r.ingredienti || r["ingredienti "],
-          passaggi: r.passaggi || r["passaggi "]
-        }));
-
         recipes = recipes.filter(r => r.nome && r.valori_per_porzione && r.ingredienti && r.passaggi);
         if (recipes.length === 0) throw new Error('Nessuna ricetta valida restituita dall\'AI');
       } catch (parseErr) {
@@ -170,10 +165,15 @@ VINCOLI:
       }
 
       state.recipes = recipes;
+      
+      // ✅ Sicurezza: assicuriamo che sia un array prima di chiamare .map()
+      if (!Array.isArray(state.recipes)) state.recipes = [];
+      
       container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
     } catch (e) {
       console.error('Errore generazione:', e);
       container.innerHTML = `<p class="error">❌ ${e.message || 'Errore nella generazione. Riprova.'}</p>`;
+      state.recipes = []; // Reset sicuro in caso di errore
     } finally {
       btn.disabled = false;
       btn.innerHTML = "Genera Ricette ✦";
