@@ -136,8 +136,26 @@ VINCOLI: Calorie entro ±10%, rispetta ingredienti/tempo/cottura/esclusioni.`;
 
       let recipes = [];
       try {
-        const parsed = JSON.parse(content);
+        let parsed = JSON.parse(content);
+        
+        // Se l'AI ha restituito un oggetto contenitore, estrai l'array interno
+        if (!Array.isArray(parsed)) {
+          parsed = parsed.ricette || parsed.recipes || parsed.data || [parsed];
+        }
+        
         recipes = Array.isArray(parsed) ? parsed : [parsed];
+
+        // Normalizza le chiavi (rimuove eventuali spazi finali aggiunti dall'AI)
+        recipes = recipes.map(r => ({
+          nome: r.nome || r["nome "],
+          descrizione: r.descrizione || r["descrizione "],
+          cucina: r.cucina || r["cucina "],
+          taste: r.taste || r["taste "],
+          valori_per_porzione: r.valori_per_porzione || r["valori_per_porzione "],
+          ingredienti: r.ingredienti || r["ingredienti "],
+          passaggi: r.passaggi || r["passaggi "]
+        }));
+
         recipes = recipes.filter(r => r.nome && r.valori_per_porzione && r.ingredienti && r.passaggi);
         if (recipes.length === 0) throw new Error('Nessuna ricetta valida restituita dall\'AI');
       } catch (parseErr) {
@@ -146,9 +164,6 @@ VINCOLI: Calorie entro ±10%, rispetta ingredienti/tempo/cottura/esclusioni.`;
 
       state.recipes = recipes;
       container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
-    } catch (e) {
-      console.error('Errore generazione:', e);
-      container.innerHTML = `<p class="error">❌ ${e.message || 'Errore nella generazione. Riprova.'}</p>`;
       state.recipes = [];
     } finally {
       btn.disabled = false;
