@@ -32,6 +32,7 @@ Vincoli: Rispetta target nutrizionali ±10%, ingredienti richiesti, tempo/cottur
           body: JSON.stringify({
             model: body.model || 'gpt-4o-mini',
             messages: [systemPrompt, ...(body.messages || [])],
+            response_format: { type: "json_object" }
           }),
         });
 
