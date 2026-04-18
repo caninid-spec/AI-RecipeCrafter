@@ -43,12 +43,7 @@
     const container = document.getElementById('saved-container');
     if (!container) return;
     if (state.filteredSaved.length === 0) {
-      container.innerHTML = `
-        <div class="no-results" role="status">
-          <span class="empty-icon" aria-hidden="true">🔖</span>
-          <p class="empty-title">Nessuna ricetta trovata</p>
-          <p class="empty-desc">Genera delle ricette e salvale con il tasto 🔖.</p>
-        </div>`;
+      container.innerHTML = `<div class="no-results" role="status"><span class="empty-icon" aria-hidden="true">🔖</span><p class="empty-title">Nessuna ricetta trovata</p><p class="empty-desc">Genera delle ricette e salvale con il tasto 🔖.</p></div>`;
       return;
     }
 
@@ -57,31 +52,21 @@
 
     let html = '';
     if (salate.length > 0) {
-      html += `
-        <section class="saved-section">
-          <h3 class="saved-section-title">🧂 Ricette Salate</h3>
-          <div class="cards-grid">${salate.map((r, i) => renderCard(r, i, true)).join('')}</div>
-        </section>`;
+      html += `<section class="saved-section"><h3 class="saved-section-title">🧂 Ricette Salate</h3><div class="cards-grid">${salate.map((r, i) => renderCard(r, i, true)).join('')}</div></section>`;
     }
     if (dolci.length > 0) {
-      html += `
-        <section class="saved-section">
-          <h3 class="saved-section-title">🍰 Ricette Dolci</h3>
-          <div class="cards-grid">${dolci.map((r, i) => renderCard(r, i, true)).join('')}</div>
-        </section>`;
+      html += `<section class="saved-section"><h3 class="saved-section-title">🍰 Ricette Dolci</h3><div class="cards-grid">${dolci.map((r, i) => renderCard(r, i, true)).join('')}</div></section>`;
     }
     container.innerHTML = html;
   }
 
   function _showCustomInput(groupId) {
-    const wrapId = `${groupId}-custom-wrap`;
-    const wrap = document.getElementById(wrapId);
+    const wrap = document.getElementById(`${groupId}-custom-wrap`);
     if (wrap) wrap.style.display = 'block';
   }
 
   function _hideCustomInput(groupId) {
-    const wrapId = `${groupId}-custom-wrap`;
-    const wrap = document.getElementById(wrapId);
+    const wrap = document.getElementById(`${groupId}-custom-wrap`);
     if (wrap) wrap.style.display = 'none';
   }
 
@@ -91,10 +76,8 @@
         document.querySelectorAll(`#${groupId} .radio-row`).forEach(r => r.classList.remove('active'));
         row.classList.add('active');
         row.setAttribute('aria-checked', 'true');
-        const value = row.dataset[key];
-        state[key] = value;
-        if (value === '__altro__') _showCustomInput(groupId);
-        else _hideCustomInput(groupId);
+        state[key] = row.dataset[key];
+        state[key] === '__altro__' ? _showCustomInput(groupId) : _hideCustomInput(groupId);
       });
     });
   }
@@ -136,12 +119,9 @@ Cucine: ${cuisines}
 Cottura: ${cottureFinal} | Tempo: ${tempoFinal}
 Nutrizionali: ${nutritionInstructions}
 ${restrictions}
-SCHEMA RIGIDO - ogni ricetta:
+SCHEMA RIGIDO (array JSON puro, senza markdown):
 [{"nome":"string","descrizione":"string","cucina":"string","taste":"${state.taste}","valori_per_porzione":{"calorie":0,"proteine":0,"carboidrati":0,"grassi":0},"ingredienti":[{"nome":"string","qty":"string"}],"passaggi":["string"]}]
-VINCOLI:
-- Calorie entro ±10% target
-- Rispetta ingredienti, tempo, cottura ed esclusioni
-- Restituisci SOLO un array JSON valido, niente markdown o testo aggiuntivo.`;
+VINCOLI: Calorie entro ±10%, rispetta ingredienti/tempo/cottura/esclusioni.`;
 
       const res = await fetch(PROXY_URL, {
         method: 'POST',
@@ -165,15 +145,11 @@ VINCOLI:
       }
 
       state.recipes = recipes;
-      
-      // ✅ Sicurezza: assicuriamo che sia un array prima di chiamare .map()
-      if (!Array.isArray(state.recipes)) state.recipes = [];
-      
       container.innerHTML = `<div class="cards-grid">${state.recipes.map((r, i) => renderCard(r, i, false)).join('')}</div>`;
     } catch (e) {
       console.error('Errore generazione:', e);
       container.innerHTML = `<p class="error">❌ ${e.message || 'Errore nella generazione. Riprova.'}</p>`;
-      state.recipes = []; // Reset sicuro in caso di errore
+      state.recipes = [];
     } finally {
       btn.disabled = false;
       btn.innerHTML = "Genera Ricette ✦";
@@ -219,11 +195,7 @@ VINCOLI:
     const originalText = btn.innerHTML;
     btn.innerHTML = '⏳ Salvataggio...';
     try {
-      const res = await fetch(DB_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(recipe)
-      });
+      const res = await fetch(DB_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(recipe) });
       if (!res.ok) throw new Error(`DB error: ${res.status}`);
       btn.innerHTML = '✓ Salvata';
       await loadSavedFromDB();
@@ -245,15 +217,8 @@ VINCOLI:
     const originalText = btn.innerHTML;
     btn.innerHTML = '⏳';
     try {
-      const res = await fetch(DB_URL, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: recipeName })
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`DB error: ${res.status} - ${errData.error || 'Unknown'}`);
-      }
+      const res = await fetch(DB_URL, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: recipeName }) });
+      if (!res.ok) throw new Error(`DB error: ${res.status}`);
       btn.innerHTML = '✓';
       await loadSavedFromDB();
       setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 1500);
@@ -267,9 +232,7 @@ VINCOLI:
 
   function filterSaved(query) {
     const q = query.toLowerCase();
-    state.filteredSaved = state.saved.filter(r =>
-      r.nome.toLowerCase().includes(q) || (r.cucina && r.cucina.toLowerCase().includes(q))
-    );
+    state.filteredSaved = state.saved.filter(r => r.nome.toLowerCase().includes(q) || (r.cucina && r.cucina.toLowerCase().includes(q)));
     _renderSaved();
   }
 
@@ -325,8 +288,7 @@ VINCOLI:
       btn.addEventListener('click', () => {
         document.querySelectorAll('.model-seg-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
         btn.classList.add('active'); btn.setAttribute('aria-pressed','true'); state.aiModel = btn.dataset.model;
-        const hint = document.getElementById('model-seg-hint');
-        if(hint) hint.textContent = state.aiModel === 'gpt-4o-mini' ? 'Standard · economico' : 'Avanzato';
+        const hint = document.getElementById('model-seg-hint'); if(hint) hint.textContent = state.aiModel === 'gpt-4o-mini' ? 'Standard · economico' : 'Avanzato';
       });
     });
     document.querySelectorAll('.nav-tab').forEach(tab => {
